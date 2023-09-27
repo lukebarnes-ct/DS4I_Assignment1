@@ -1,0 +1,23 @@
+[
+  {
+    "objectID": "addition.html",
+    "href": "addition.html",
+    "title": "Adding numbers in R",
+    "section": "",
+    "text": "To add numbers in R use +\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Welcome!",
+    "section": "",
+    "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites."
+  },
+  {
+    "objectID": "multiplication.html",
+    "href": "multiplication.html",
+    "title": "Multiplying numbers in R",
+    "section": "",
+    "text": "To multiply numbers in R use *\n\n2 * 3\n\n[1] 6"
+  }
+]
