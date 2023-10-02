@@ -4,6 +4,7 @@ rm(list = ls())
 library(tidyverse)
 library(tidytext)
 library(tokenizers)
+library(gghighlight)
 
 ### Load Cleaned Data
 
@@ -61,6 +62,60 @@ ggplot(edaPlotData1, aes(x = Year, y = Length, color = President, shape = Presid
   scale_shape_manual(values = rep(18, 6)) +
   theme_bw(base_size = 12)
 
+## Highlight the most commonly used words for each President
+
+unnest_reg = "[^\\w_#@']"
+
+speechWords = as.tibble(sona) %>%
+  rename(president = president_13) %>%
+  unnest_tokens(word, speech, token = 'regex', pattern = unnest_reg) %>%
+  filter(str_detect(word, '[a-z]')) %>%
+  filter(!word %in% stop_words$word) %>%
+  select(president, year, word) 
+
+# Mandela's most commonly used words
+
+speechWords %>%
+  filter(president == "Mandela") %>%
+  count(word, sort = TRUE) %>%
+  filter(rank(desc(n)) <= 20) %>%
+  ggplot(aes(x = reorder(word, n), y = n)) + geom_col(fill = "pink", col = "black") + coord_flip() + 
+  xlab('') + ylab("Times Used in Speeches") +
+  theme_bw(base_size = 12) +
+  gghighlight(n >= 115)
+
+# Mbeki's most commonly used words
+
+speechWords %>%
+  filter(president == "Mbeki") %>%
+  count(word, sort = TRUE) %>%
+  filter(rank(desc(n)) <= 20) %>%
+  ggplot(aes(x = reorder(word, n), y = n)) + geom_col(fill = "pink", col = "black") + coord_flip() + 
+  xlab('') + ylab("Times Used in Speeches") +
+  theme_bw(base_size = 12) +
+  gghighlight(n >= 235)
+
+# Zuma's most commonly used words
+
+speechWords %>%
+  filter(president == "Zuma") %>%
+  count(word, sort = TRUE) %>%
+  filter(rank(desc(n)) <= 20) %>%
+  ggplot(aes(x = reorder(word, n), y = n)) + geom_col(fill = "pink", col = "black") + coord_flip() + 
+  xlab('') + ylab("Times Used in Speeches") +
+  theme_bw(base_size = 12) +
+  gghighlight(n >= 169)
+
+# Ramaphosa's most commonly used words
+
+speechWords %>%
+  filter(president == "Ramaphosa") %>%
+  count(word, sort = TRUE) %>%
+  filter(rank(desc(n)) <= 20) %>%
+  ggplot(aes(x = reorder(word, n), y = n)) + geom_col(fill = "pink", col = "black") + coord_flip() + 
+  xlab('') + ylab("Times Used in Speeches") +
+  theme_bw(base_size = 12) +
+  gghighlight(n >= 150)
 
 ### Neural Networks
 
