@@ -117,5 +117,103 @@ speechWords %>%
   theme_bw(base_size = 12) +
   gghighlight(n >= 150)
 
-### Neural Networks
 
+### Models
+
+# Separate speeches into sentences
+
+speechSentences = as.tibble(sona) %>%
+  rename(president = president_13) %>%
+  unnest_tokens(sentences, speech, token = "sentences") %>%
+  select(president, year, sentences) %>%
+  mutate(sentID = row_number())
+
+wordsWithSentID = speechSentences %>% 
+  unnest_tokens(word, sentences, token = 'regex', pattern = unnest_reg) %>%
+  filter(str_detect(word, '[a-z]')) %>%
+  filter(!word %in% stop_words$word) %>%
+  select(sentID, president, year, word) 
+
+## Bag-Of-Words Model
+
+bagWords = wordsWithSentID %>%
+  group_by(word) %>%
+  count() %>%
+  ungroup() %>%
+  top_n(200, wt = n) %>%
+  select(-n) 
+
+speechTDF = speechSentences %>%
+  inner_join(wordsWithSentID) %>%
+  group_by(sentID, word) %>%
+  count() %>%  
+  group_by(sentID) %>%
+  mutate(total = sum(n)) %>%
+  ungroup()
+
+# left_join got confused just using president as a variable 
+# due to there being other president variables in speechTDF
+# change to presidentName
+
+bagWords = speechTDF %>%
+  select(sentID, word, n) %>% 
+  pivot_wider(names_from = word, values_from = n, values_fill = 0) %>%
+  left_join(speechSentences %>% 
+              rename(presidentName = president) %>% 
+              select(sentID, presidentName), by = "sentID") %>%
+  select(sentID, presidentName, everything())
+
+table(bagWords$presidentName)
+
+# remove deKlerk and Motlanthe
+# use 1600 sentences from each of the four presidents
+
+sampledBOW = bagWords %>% 
+  filter(presidentName == "Mandela" | presidentName == "Mbeki" | 
+           presidentName == "Ramaphosa" | presidentName == "Zuma") %>%
+  group_by(presidentName) %>% 
+  slice_sample(n = 1500) %>% 
+  ungroup()
+
+table(sampledBOW$presidentName)
+
+set.seed(2023)
+
+trainingIDS = sampledBOW %>% 
+  group_by(presidentName) %>% 
+  slice_sample(prop = 0.7) %>% 
+  ungroup() %>%
+  select(sentID)
+
+trainingSentences = sampledBOW %>%
+  right_join(trainingIDS, by = "sentID") %>%
+  select(-sentID)
+
+tAndVSentences = sampledBOW %>%
+  anti_join(trainingIDS, by = "sentID")
+
+validationIDS = tAndVSentences %>%
+  group_by(presidentName) %>% 
+  slice_sample(prop = 0.7) %>% 
+  ungroup() %>%
+  select(sentID)
+
+validationSentences = tAndVSentences %>%
+  right_join(validationIDS, by = "sentID") %>%
+  select(-sentID)
+
+testSentences = tAndVSentences %>%
+  anti_join(validationIDS, by = "sentID") %>%
+  select(-sentID)
+
+ ## TF-IDF Model
+
+speechWords %>%
+  count(president, word, sort = TRUE) %>%
+  bind_tf_idf(word, president, n) %>%
+  arrange(desc(tf_idf))
+
+## Neural Networks
+
+
+  
