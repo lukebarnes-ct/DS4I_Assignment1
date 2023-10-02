@@ -5,6 +5,9 @@ library(tidyverse)
 library(tidytext)
 library(tokenizers)
 library(gghighlight)
+library(rpart)
+library(ranger)
+library(janitor)
 
 ### Load Cleaned Data
 
@@ -134,7 +137,7 @@ wordsWithSentID = speechSentences %>%
   filter(!word %in% stop_words$word) %>%
   select(sentID, president, year, word) 
 
-## Bag-Of-Words Model
+#### Bag-Of-Words Model
 
 bagWords = wordsWithSentID %>%
   group_by(word) %>%
@@ -206,7 +209,40 @@ testSentences = tAndVSentences %>%
   anti_join(validationIDS, by = "sentID") %>%
   select(-sentID)
 
- ## TF-IDF Model
+## Classification Tree
+
+bowFit = rpart(presidentName ~., 
+               data = trainingSentences,
+               method = "class")
+
+# plot(bowFit, main = 'Full Classification Tree')
+# text(bowFit, use.n = TRUE, all = TRUE, cex=.8)
+
+fittedtrain = predict(bowFit, type = 'class')
+predtrain = table(trainingSentences$presidentName, fittedtrain)
+predtrain
+
+round(sum(diag(predtrain))/sum(predtrain), 3) # training accuracy
+
+#### Random Forests
+
+rfNames = colnames(trainingSentences) %>% 
+  as.tibble() %>%
+  mutate(newNames = str_remove_all(value, "[0-9]"))
+
+rfTrainData = trainingSentences %>%
+  mutate(presidentName = as.factor(presidentName))
+
+colnames(rfTrainData) = rfNames
+
+bowRF = ranger(presidentName ~ ., 
+               data = rfTrainData,
+               mtry = 5,
+               num.trees = 500)
+
+##
+
+ #### TF-IDF Model
 
 speechWords %>%
   count(president, word, sort = TRUE) %>%
