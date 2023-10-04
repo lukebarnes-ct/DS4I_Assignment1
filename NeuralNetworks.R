@@ -6,260 +6,100 @@ library(tidytext)
 library(tokenizers)
 library(gghighlight)
 library(rpart)
+library(tictoc)
 library(ranger)
-library(janitor)
+library(caret)
 
-### Load Cleaned Data
+### Load Different Datasets
 
-load("SonaData.RData")
+load("SetSentenceData.RData")
 
-### Exploratory Data Analysis
+## Classification Tree
 
-words = tokenize_words(sona$speech)
+tic()
+bowFit = rpart(presidentName ~., 
+               data = trainingSentencesBOW,
+               method = "class")
+toc()
 
-## Plot the number of words against the year
+trainFittedBOW = predict(bowFit, type = 'class')
+trainPredBOW = table(trainingSentencesBOW$presidentName, trainFittedBOW)
+round(sum(diag(trainPredBOW))/sum(trainPredBOW), 3)
 
-edaPlotData = data.frame("Year" = sona$year,
-                         "nWords" = sapply(words, length),
-                         "President" = sona$president_13)
+tic()
+tf.idf.Fit = rpart(presidentName ~., 
+                   data = trainingSentences.TF.IDF,
+                   method = "class")
+toc()
 
-ggplot(edaPlotData, aes(x = Year, y = nWords, color = President, shape = President)) +
-  geom_point(size = 7) +
-  xlab("Year") + ylab("Number of Words") +
-  scale_x_discrete(name = "Year", 
-                   breaks = c("1994","1999","2004", "2009", 
-                              "2014", "2019", "2023")) +
-  scale_y_continuous(name = "Number of Words", 
-                     breaks = c(3000, 6000, 9000)) +
-  scale_shape_manual(values = rep(18, 6)) +
-  theme_bw(base_size = 12)
+trainFitted.TF.IDF = predict(tf.idf.Fit, type = 'class')
+trainPred.TF.IDF = table(trainingSentences.TF.IDF$presidentName, 
+                         trainFitted.TF.IDF)
+round(sum(diag(trainPred.TF.IDF))/sum(trainPred.TF.IDF), 3)
 
-## Plot the Average Sentence Length over time
+## Random Forests
 
-avgSentenceLength = c()
+trainingSentencesBOW$presidentName = factor(trainingSentencesBOW$presidentName)
 
-for (j in 1:36){
-  
-  sentWords = sapply(tokenize_sentences(sona$speech[j]), tokenize_words)
-  len = length(sentWords)
-  sentL = c()
-  
-  for (k in 1:len){
-    sentL[k] = sapply(sentWords[k], length)
-  }
-  
-  avgSentenceLength[j] = mean(sentL)
+tic()
+bowFit.Ranger = ranger(presidentName ~ ., 
+                       data = trainingSentencesBOW,
+                       mtry = 20,
+                       num.trees = 500)
+toc()
+
+trainFittedBOW.Ranger = bowFit.Ranger$predictions
+trainPredBOW.Ranger = table(trainingSentencesBOW$presidentName, trainFittedBOW.Ranger)
+round(sum(diag(trainPredBOW.Ranger))/sum(trainPredBOW.Ranger), 3)
+
+trainingSentences.TF.IDF$presidentName = factor(trainingSentences.TF.IDF$presidentName)
+
+tic()
+tf.idf.Fit.Ranger = ranger(presidentName ~ ., 
+                           data = trainingSentences.TF.IDF,
+                           mtry = 20,
+                           num.trees = 500)
+toc()
+
+trainFitted.TF.IDF.Ranger = tf.idf.Fit.Ranger$predictions
+trainPred.TF.IDF.Ranger = table(trainingSentences.TF.IDF$presidentName, trainFitted.TF.IDF.Ranger)
+round(sum(diag(trainPred.TF.IDF.Ranger))/sum(trainPred.TF.IDF.Ranger), 3)
+
+#### Validation Analysis with Ranger
+
+error = c()
+seq = seq(100, 500, by = 100)
+for(i in 1:length(seq)){
+  tic()
+  error[i] = ranger(presidentName ~ ., 
+                    data = trainingSentences.TF.IDF,
+                    num.trees = seq[i], 
+                    mtry = 20)$prediction.error
+  print(paste0("Iteration: ", i))
+  toc()
 }
 
-edaPlotData1 = data.frame("Year" = sona$year,
-                          "Length" = avgSentenceLength,
-                          "President" = sona$president_13)
+plot(seq, error, type = 'l', col = 'blue', lwd = 3,)
 
-ggplot(edaPlotData1, aes(x = Year, y = Length, color = President, shape = President)) +
-  geom_point(size = 7) +
-  xlab("Year") + ylab("Average Sentence Length") +
-  scale_x_discrete(name = "Year", 
-                   breaks = c("1994","1999","2004", "2009", 
-                              "2014", "2019", "2023")) +
-  scale_y_continuous(breaks = c(20, 30, 40)) +
-  scale_shape_manual(values = rep(18, 6)) +
-  theme_bw(base_size = 12)
+rf_grid = expand.grid(mtry = seq(5, 25, by = 5),
+                      splitrule = 'gini',
+                      min.node.size = 1)
 
-## Highlight the most commonly used words for each President
+ctrl = trainControl(method = 'oob', verboseIter = T)
 
-unnest_reg = "[^\\w_#@']"
+tic()
+rf_gridsearch = train(presidentName ~ ., 
+                      data = trainingSentences.TF.IDF,
+                      method = 'ranger',
+                      num.trees = 100,
+                      verbose = T,
+                      trControl = ctrl,
+                      tuneGrid = rf_grid)
+toc()
 
-speechWords = as_tibble(sona) %>%
-  rename(president = president_13) %>%
-  unnest_tokens(word, speech, token = 'regex', pattern = unnest_reg) %>%
-  filter(str_detect(word, '[a-z]')) %>%
-  filter(!word %in% stop_words$word) %>%
-  select(president, year, word) 
+res = rf_gridsearch$results
+rf_gridsearch$finalModel
 
-# Mandela's most commonly used words
-
-speechWords %>%
-  filter(president == "Mandela") %>%
-  count(word, sort = TRUE) %>%
-  filter(rank(desc(n)) <= 20) %>%
-  ggplot(aes(x = reorder(word, n), y = n)) + geom_col(fill = "pink", col = "black") + coord_flip() + 
-  xlab('') + ylab("Times Used in Speeches") +
-  theme_bw(base_size = 12) +
-  gghighlight(n >= 115)
-
-# Mbeki's most commonly used words
-
-speechWords %>%
-  filter(president == "Mbeki") %>%
-  count(word, sort = TRUE) %>%
-  filter(rank(desc(n)) <= 20) %>%
-  ggplot(aes(x = reorder(word, n), y = n)) + geom_col(fill = "pink", col = "black") + coord_flip() + 
-  xlab('') + ylab("Times Used in Speeches") +
-  theme_bw(base_size = 12) +
-  gghighlight(n >= 235)
-
-# Zuma's most commonly used words
-
-speechWords %>%
-  filter(president == "Zuma") %>%
-  count(word, sort = TRUE) %>%
-  filter(rank(desc(n)) <= 20) %>%
-  ggplot(aes(x = reorder(word, n), y = n)) + geom_col(fill = "pink", col = "black") + coord_flip() + 
-  xlab('') + ylab("Times Used in Speeches") +
-  theme_bw(base_size = 12) +
-  gghighlight(n >= 169)
-
-# Ramaphosa's most commonly used words
-
-speechWords %>%
-  filter(president == "Ramaphosa") %>%
-  count(word, sort = TRUE) %>%
-  filter(rank(desc(n)) <= 20) %>%
-  ggplot(aes(x = reorder(word, n), y = n)) + geom_col(fill = "pink", col = "black") + coord_flip() + 
-  xlab('') + ylab("Times Used in Speeches") +
-  theme_bw(base_size = 12) +
-  gghighlight(n >= 150)
-
-
-### Models
-
-# Separate speeches into sentences
-
-speechSentences = as_tibble(sona) %>%
-  rename(president = president_13) %>%
-  unnest_tokens(sentences, speech, token = "sentences") %>%
-  select(president, year, sentences) %>%
-  mutate(sentID = row_number())
-
-wordsWithSentID = speechSentences %>% 
-  unnest_tokens(word, sentences, token = 'regex', pattern = unnest_reg) %>%
-  filter(str_detect(word, '[a-z]')) %>%
-  filter(!word %in% stop_words$word) %>%
-  select(sentID, president, year, word) 
-
-#### Bag-Of-Words Model
-
-bagWords = wordsWithSentID %>%
-  group_by(word) %>%
-  count() %>%
-  ungroup() %>%
-  top_n(200, wt = n) %>%
-  select(-n) 
-
-speechTDF = speechSentences %>%
-  inner_join(wordsWithSentID) %>%
-  group_by(sentID, word) %>%
-  count() %>%  
-  group_by(sentID) %>%
-  mutate(total = sum(n)) %>%
-  ungroup()
-
-# left_join got confused just using president as a variable 
-# due to there being other president variables in speechTDF
-# change to presidentName
-
-bagWords = speechTDF %>%
-  select(sentID, word, n) %>% 
-  pivot_wider(names_from = word, values_from = n, values_fill = 0) %>%
-  left_join(speechSentences %>% 
-              rename(presidentName = president) %>% 
-              select(sentID, presidentName), by = "sentID") %>%
-  select(sentID, presidentName, everything())
-
-table(bagWords$presidentName)
-
-# remove deKlerk and Motlanthe
-# use 1600 sentences from each of the four presidents
-
-sampledBOW = bagWords %>% 
-  filter(presidentName == "Mandela" | presidentName == "Mbeki" | 
-           presidentName == "Ramaphosa" | presidentName == "Zuma") %>%
-  group_by(presidentName) %>% 
-  slice_sample(n = 1500) %>% 
-  ungroup()
-
-table(sampledBOW$presidentName)
-
-set.seed(2023)
-
-trainingIDSBOW = sampledBOW %>% 
-  group_by(presidentName) %>% 
-  slice_sample(prop = 0.7) %>% 
-  ungroup() %>%
-  select(sentID)
-
-trainingSentencesBOW = sampledBOW %>%
-  right_join(trainingIDSBOW, by = "sentID") %>%
-  select(-sentID)
-
-tAndVSentencesBOW = sampledBOW %>%
-  anti_join(trainingIDSBOW, by = "sentID")
-
-validationIDSBOW = tAndVSentencesBOW %>%
-  group_by(presidentName) %>% 
-  slice_sample(prop = 0.7) %>% 
-  ungroup() %>%
-  select(sentID)
-
-validationSentencesBOW = tAndVSentencesBOW %>%
-  right_join(validationIDSBOW, by = "sentID") %>%
-  select(-sentID)
-
-testSentencesBOW = tAndVSentencesBOW %>%
-  anti_join(validationIDSBOW, by = "sentID") %>%
-  select(-sentID)
-
-##
-
-#### TF-IDF Model
-
-tf.idf = speechTDF %>%
-  bind_tf_idf(word, sentID, n) %>% 
-  select(sentID, word, tf_idf) %>%
-  pivot_wider(names_from = word, 
-              values_from = tf_idf, 
-              values_fill = 0) %>%  
-  left_join(speechSentences %>% 
-              rename(presidentName = president) %>% 
-              select(sentID, presidentName), by = "sentID")
-
-sampled.TF.IDF = tf.idf %>% 
-  filter(presidentName == "Mandela" | presidentName == "Mbeki" | 
-           presidentName == "Ramaphosa" | presidentName == "Zuma") %>%
-  group_by(presidentName) %>% 
-  slice_sample(n = 1500) %>% 
-  ungroup()
-
-table(sampled.TF.IDF$presidentName)
-
-set.seed(2023)
-
-trainingIDS.TF.IDF = sampled.TF.IDF %>% 
-  group_by(presidentName) %>% 
-  slice_sample(prop = 0.7) %>% 
-  ungroup() %>%
-  select(sentID)
-
-trainingSentences.TF.IDF = sampled.TF.IDF %>%
-  right_join(trainingIDS.TF.IDF, by = "sentID") %>%
-  select(-sentID)
-
-tAndVSentences.TF.IDF = sampled.TF.IDF %>%
-  anti_join(trainingIDS.TF.IDF, by = "sentID")
-
-validationIDS.TF.IDF = tAndVSentences.TF.IDF %>%
-  group_by(presidentName) %>% 
-  slice_sample(prop = 0.7) %>% 
-  ungroup() %>%
-  select(sentID)
-
-validationSentences.TF.IDF = tAndVSentences.TF.IDF %>%
-  right_join(validationIDS.TF.IDF, by = "sentID") %>%
-  select(-sentID)
-
-testSentences.TF.IDF = tAndVSentences.TF.IDF %>%
-  anti_join(validationIDS.TF.IDF, by = "sentID") %>%
-  select(-sentID)
 
 ## Neural Networks
 
