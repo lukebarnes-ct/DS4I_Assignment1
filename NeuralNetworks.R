@@ -68,18 +68,25 @@ round(sum(diag(trainPred.TF.IDF.Ranger))/sum(trainPred.TF.IDF.Ranger), 3)
 #### Validation Analysis with Ranger
 
 error = c()
-seq = seq(100, 500, by = 100)
+valErr = c()
+seq = seq(250, 1750, by = 250)
 for(i in 1:length(seq)){
   tic()
-  error[i] = ranger(presidentName ~ ., 
-                    data = trainingSentences.TF.IDF,
-                    num.trees = seq[i], 
-                    mtry = 20)$prediction.error
+  mod = ranger(presidentName ~ ., 
+               data = trainingSentences.TF.IDF,
+               num.trees = seq[i], 
+               mtry = 10)
+  error[i] = mod$prediction.error
+  valModPreds = predict(mod, validationSentences.TF.IDF)$predictions
+  valModPreds.Ranger = table(validationSentences.TF.IDF$presidentName, valModPreds)
+  valErr[i] = (1 - round(sum(diag(valModPreds.Ranger))/sum(valModPreds.Ranger), 3))
   print(paste0("Iteration: ", i))
   toc()
 }
 
-plot(seq, error, type = 'l', col = 'blue', lwd = 3,)
+plot(seq, error, type = 'l', col = 'blue', lwd = 3)
+plot(seq, valErr, type = 'l', col = 'blue', lwd = 3)
+lines(seq, valErr, col = 'red', lwd = 3)
 
 rf_grid = expand.grid(mtry = seq(5, 25, by = 5),
                       splitrule = 'gini',
