@@ -181,6 +181,8 @@ sampledBOW = bagWords %>%
   slice_sample(n = 1500) %>% 
   ungroup()
 
+sampledBOW
+
 table(sampledBOW$presidentName)
 
 set.seed(2023)
@@ -195,6 +197,10 @@ trainingSentencesBOW = sampledBOW %>%
   right_join(trainingIDSBOW, by = "sentID") %>%
   select(-sentID)
 
+# if else repeat while function for in next break
+
+trainingSentencesBOW = trainingSentencesBOW[, -c(495, 776, 1651)]
+
 tAndVSentencesBOW = sampledBOW %>%
   anti_join(trainingIDSBOW, by = "sentID")
 
@@ -208,9 +214,13 @@ validationSentencesBOW = tAndVSentencesBOW %>%
   right_join(validationIDSBOW, by = "sentID") %>%
   select(-sentID)
 
+validationSentencesBOW = validationSentencesBOW[, -c(495, 776, 1651)]
+
 testSentencesBOW = tAndVSentencesBOW %>%
   anti_join(validationIDSBOW, by = "sentID") %>%
   select(-sentID)
+
+testSentencesBOW = testSentencesBOW[, -c(495, 776, 1651)]
 
 #### TF-IDF Model
 
@@ -248,6 +258,9 @@ trainingSentences.TF.IDF = sampled.TF.IDF %>%
   right_join(trainingIDS.TF.IDF, by = "sentID") %>%
   select(-sentID)
 
+# if else repeat while function for in next break
+trainingSentences.TF.IDF = trainingSentences.TF.IDF[, -c(494, 775, 1650)]
+
 tAndVSentences.TF.IDF = sampled.TF.IDF %>%
   anti_join(trainingIDS.TF.IDF, by = "sentID")
 
@@ -261,9 +274,13 @@ validationSentences.TF.IDF = tAndVSentences.TF.IDF %>%
   right_join(validationIDS.TF.IDF, by = "sentID") %>%
   select(-sentID)
 
+validationSentences.TF.IDF = validationSentences.TF.IDF[, -c(494, 775, 1650)]
+
 testSentences.TF.IDF = tAndVSentences.TF.IDF %>%
   anti_join(validationIDS.TF.IDF, by = "sentID") %>%
   select(-sentID)
+
+testSentences.TF.IDF = testSentences.TF.IDF[, -c(494, 775, 1650)]
 
 save(speechSentences, bagWords, speechTDF,
      sampledBOW, sampled.TF.IDF,
