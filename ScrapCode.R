@@ -29,3 +29,9 @@ bowRF = ranger(presidentName ~ .,
                data = rfTrainData,
                mtry = 5,
                num.trees = 500)
+
+#### TF-IDF Model
+speechWords %>%
+  count(president, word, sort = TRUE) %>%
+  bind_tf_idf(word, president, n) %>%
+  arrange(desc(tf_idf))

@@ -69,7 +69,7 @@ ggplot(edaPlotData1, aes(x = Year, y = Length, color = President, shape = Presid
 
 unnest_reg = "[^\\w_#@']"
 
-speechWords = as.tibble(sona) %>%
+speechWords = as_tibble(sona) %>%
   rename(president = president_13) %>%
   unnest_tokens(word, speech, token = 'regex', pattern = unnest_reg) %>%
   filter(str_detect(word, '[a-z]')) %>%
@@ -125,7 +125,7 @@ speechWords %>%
 
 # Separate speeches into sentences
 
-speechSentences = as.tibble(sona) %>%
+speechSentences = as_tibble(sona) %>%
   rename(president = president_13) %>%
   unnest_tokens(sentences, speech, token = "sentences") %>%
   select(president, year, sentences) %>%
@@ -182,72 +182,84 @@ table(sampledBOW$presidentName)
 
 set.seed(2023)
 
-trainingIDS = sampledBOW %>% 
+trainingIDSBOW = sampledBOW %>% 
   group_by(presidentName) %>% 
   slice_sample(prop = 0.7) %>% 
   ungroup() %>%
   select(sentID)
 
-trainingSentences = sampledBOW %>%
-  right_join(trainingIDS, by = "sentID") %>%
+trainingSentencesBOW = sampledBOW %>%
+  right_join(trainingIDSBOW, by = "sentID") %>%
   select(-sentID)
 
-tAndVSentences = sampledBOW %>%
-  anti_join(trainingIDS, by = "sentID")
+tAndVSentencesBOW = sampledBOW %>%
+  anti_join(trainingIDSBOW, by = "sentID")
 
-validationIDS = tAndVSentences %>%
+validationIDSBOW = tAndVSentencesBOW %>%
   group_by(presidentName) %>% 
   slice_sample(prop = 0.7) %>% 
   ungroup() %>%
   select(sentID)
 
-validationSentences = tAndVSentences %>%
-  right_join(validationIDS, by = "sentID") %>%
+validationSentencesBOW = tAndVSentencesBOW %>%
+  right_join(validationIDSBOW, by = "sentID") %>%
   select(-sentID)
 
-testSentences = tAndVSentences %>%
-  anti_join(validationIDS, by = "sentID") %>%
+testSentencesBOW = tAndVSentencesBOW %>%
+  anti_join(validationIDSBOW, by = "sentID") %>%
   select(-sentID)
-
-## Classification Tree
-
-bowFit = rpart(presidentName ~., 
-               data = trainingSentences,
-               method = "class")
-
-# plot(bowFit, main = 'Full Classification Tree')
-# text(bowFit, use.n = TRUE, all = TRUE, cex=.8)
-
-fittedtrain = predict(bowFit, type = 'class')
-predtrain = table(trainingSentences$presidentName, fittedtrain)
-predtrain
-
-round(sum(diag(predtrain))/sum(predtrain), 3) # training accuracy
-
-#### Random Forests
-
-rfNames = colnames(trainingSentences) %>% 
-  as.tibble() %>%
-  mutate(newNames = str_remove_all(value, "[0-9]"))
-
-rfTrainData = trainingSentences %>%
-  mutate(presidentName = as.factor(presidentName))
-
-colnames(rfTrainData) = rfNames
-
-bowRF = ranger(presidentName ~ ., 
-               data = rfTrainData,
-               mtry = 5,
-               num.trees = 500)
 
 ##
 
- #### TF-IDF Model
+#### TF-IDF Model
 
-speechWords %>%
-  count(president, word, sort = TRUE) %>%
-  bind_tf_idf(word, president, n) %>%
-  arrange(desc(tf_idf))
+tf.idf = speechTDF %>%
+  bind_tf_idf(word, sentID, n) %>% 
+  select(sentID, word, tf_idf) %>%
+  pivot_wider(names_from = word, 
+              values_from = tf_idf, 
+              values_fill = 0) %>%  
+  left_join(speechSentences %>% 
+              rename(presidentName = president) %>% 
+              select(sentID, presidentName), by = "sentID")
+
+sampled.TF.IDF = tf.idf %>% 
+  filter(presidentName == "Mandela" | presidentName == "Mbeki" | 
+           presidentName == "Ramaphosa" | presidentName == "Zuma") %>%
+  group_by(presidentName) %>% 
+  slice_sample(n = 1500) %>% 
+  ungroup()
+
+table(sampled.TF.IDF$presidentName)
+
+set.seed(2023)
+
+trainingIDS.TF.IDF = sampled.TF.IDF %>% 
+  group_by(presidentName) %>% 
+  slice_sample(prop = 0.7) %>% 
+  ungroup() %>%
+  select(sentID)
+
+trainingSentences.TF.IDF = sampled.TF.IDF %>%
+  right_join(trainingIDS.TF.IDF, by = "sentID") %>%
+  select(-sentID)
+
+tAndVSentences.TF.IDF = sampled.TF.IDF %>%
+  anti_join(trainingIDS.TF.IDF, by = "sentID")
+
+validationIDS.TF.IDF = tAndVSentences.TF.IDF %>%
+  group_by(presidentName) %>% 
+  slice_sample(prop = 0.7) %>% 
+  ungroup() %>%
+  select(sentID)
+
+validationSentences.TF.IDF = tAndVSentences.TF.IDF %>%
+  right_join(validationIDS.TF.IDF, by = "sentID") %>%
+  select(-sentID)
+
+testSentences.TF.IDF = tAndVSentences.TF.IDF %>%
+  anti_join(validationIDS.TF.IDF, by = "sentID") %>%
+  select(-sentID)
 
 ## Neural Networks
 
