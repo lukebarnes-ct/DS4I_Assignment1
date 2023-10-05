@@ -84,7 +84,7 @@ for(i in 1:length(seq)){
   toc()
 }
 
-plot(seq, error, type = 'l', col = 'blue', lwd = 3)
+plot(seq, error, type = 'l', col = 'blue', lwd = 3, ylim = c(0.5, 0.575))
 plot(seq, valErr, type = 'l', col = 'blue', lwd = 3)
 lines(seq, valErr, col = 'red', lwd = 3)
 
@@ -110,5 +110,3 @@ rf_gridsearch$finalModel
 
 ## Neural Networks
 
-
-  
