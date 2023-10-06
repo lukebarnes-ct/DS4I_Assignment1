@@ -78,3 +78,44 @@ NEWtrainingSentencesBOW = trainingSentencesBOW[, -c(495, 776, 1651)]
 NEWtrainingSentencesBOW$presidentName = factor(NEWtrainingSentencesBOW$presidentName)
 
 match("break", names(trainingSentences.TF.IDF))
+
+classErrorBOW.RF = (1 - round(sum(diag(trainPredBOW.Ranger))/sum(trainPredBOW.Ranger), 3))
+classError.TF.IDF.RF = (1 - round(sum(diag(trainPred.TF.IDF.Ranger))/sum(trainPred.TF.IDF.Ranger), 3))
+
+minTrees.TF.IDF.RF = seq[which.min(valErr)]
+
+plot(seq, error, type = 'l', col = 'blue', lwd = 3, ylim = c(0.475, 0.525))
+plot(seq, valErr, type = 'l', col = 'blue', lwd = 3)
+lines(seq, valErr, col = 'red', lwd = 3)
+
+grid.RF = expand.grid(mtry = seq(10, 50, by = 10),
+                      splitrule = 'gini',
+                      min.node.size = 1)
+
+ctrl.RF = trainControl(method = 'oob', verboseIter = T)
+
+tic()
+gridsearch.TF.IDF.RF = train(presidentName ~ ., 
+                             data = trainingSentences.TF.IDF,
+                             method = 'ranger',
+                             num.trees = minTrees.TF.IDF.RF,
+                             verbose = T,
+                             trControl = ctrl.RF,
+                             tuneGrid = grid.RF)
+toc()
+
+res.TF.IDF.RF = gridsearch.TF.IDF.RF$results
+gridsearch.TF.IDF.RF$finalModel
+
+tic()
+gridsearchBOW.RF = train(presidentName ~ ., 
+                         data = trainingSentencesBOW,
+                         method = 'ranger',
+                         num.trees = minTreesBOW,
+                         verbose = T,
+                         trControl = ctrl.RF,
+                         tuneGrid = grid.RF)
+toc()
+
+resBOW.RF = gridsearchBOW.RF$results
+gridsearchBOW.RF$finalModel

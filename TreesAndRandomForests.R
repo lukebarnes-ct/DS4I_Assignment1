@@ -14,6 +14,10 @@ library(caret)
 
 load("SetSentenceData.RData")
 
+### Load Data for Plots and Tables
+
+load("T&RF.RData")
+
 ## Classification Tree
 
 tic()
