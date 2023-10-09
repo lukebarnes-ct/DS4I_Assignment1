@@ -172,3 +172,12 @@ scaleFunc = function(x){
   
   return(scal)
 }
+
+tuneOne = kerasHPTuning(actFunc[1],
+                        hiddenLayer[1],
+                        dropOut[1],
+                        bSize[1],
+                        X = presData.train.TF.IDF,
+                        Y = presTarget.train.BOW.OH,
+                        XVal = presData.val.TF.IDF,
+                        YVal = presTarget.val.TF.IDF.OH)

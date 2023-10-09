@@ -78,96 +78,381 @@ presTarget.val.TF.IDF.OH = to_categorical(presTarget.val.TF.IDF)
 presTarget.test.BOW.OH = to_categorical(presTarget.test.BOW)
 presTarget.test.TF.IDF.OH = to_categorical(presTarget.test.TF.IDF)
 
-# Creating Feed-Forward Neural Network Model
+## Imp Variables
 
 dimensions = dim(presData.train.BOW.NEW)
 presNum = dim(presTarget.train.BOW.OH)[2]
 
+## Model Tuning
+
+##### Keras Function for Tuning Parameters
+
+actFunc = c("relu", "selu", "tanh", "sigmoid")
+hiddenLayer = 32 * (2^seq(0, 5))
+dropOut = seq(0.1, 0.85, by = 0.15)
+bSize = 16 * (2^seq(0, 5))
+
+kerasHPTuning = function(actF, hidLayer, dpRate, b, X, Y, XVal, YVal){
+  
+  dim = dim(X)
+  nn = keras_model_sequential()
+  
+  nn %>% 
+    layer_dense(units = hidLayer, 
+                activation = actF, 
+                input_shape = dim[2]) %>%
+    layer_dropout(rate = dpRate) %>%
+    layer_dense(units = presNum, activation = "softmax")
+  
+  summary(nn)
+  
+  nn %>% compile(
+    loss = "categorical_crossentropy",
+    optimizer = optimizer_rmsprop(learning_rate = 0.01),
+    metrics = c('accuracy'),
+  )
+  
+  nn.History = nn %>% fit(
+    X, Y, 
+    epochs = 10, batch_size = b,
+    validation_data = list(XVal, YVal),
+    verbose = 1, shuffle = TRUE
+  )
+  
+  return(nn.History$metrics$val_accuracy[10])
+}
+
+reluArray = array(0, dim = c(length(hiddenLayer), 
+                             length(dropOut),
+                             length(bSize)))
+
+seluArray = array(0, dim = c(length(hiddenLayer), 
+                             length(dropOut),
+                             length(bSize)))
+
+tanhArray = array(0, dim = c(length(hiddenLayer), 
+                             length(dropOut),
+                             length(bSize)))
+
+sigmArray = array(0, dim = c(length(hiddenLayer), 
+                             length(dropOut),
+                             length(bSize)))
+
+for (i in 1:length(hiddenLayer)){
+  
+  for (j in 1:length(dropOut)){
+    
+    for (k in 1:length(bSize)){
+      
+      reluArray[i, j, k] =  kerasHPTuning(actFunc[1],
+                                          hiddenLayer[i],
+                                          dropOut[j],
+                                          bSize[k],
+                                          X = presData.train.TF.IDF,
+                                          Y = presTarget.train.TF.IDF.OH,
+                                          XVal = presData.val.TF.IDF,
+                                          YVal = presTarget.val.TF.IDF.OH)
+      
+      seluArray[i, j, k] = kerasHPTuning(actFunc[2],
+                                         hiddenLayer[i],
+                                         dropOut[j],
+                                         bSize[k],
+                                         X = presData.train.TF.IDF,
+                                         Y = presTarget.train.TF.IDF.OH,
+                                         XVal = presData.val.TF.IDF,
+                                         YVal = presTarget.val.TF.IDF.OH)
+      
+      tanhArray[i, j, k] = kerasHPTuning(actFunc[3],
+                                         hiddenLayer[i],
+                                         dropOut[j],
+                                         bSize[k],
+                                         X = presData.train.TF.IDF,
+                                         Y = presTarget.train.TF.IDF.OH,
+                                         XVal = presData.val.TF.IDF,
+                                         YVal = presTarget.val.TF.IDF.OH)
+      
+      sigmArray[i, j, k] = kerasHPTuning(actFunc[4],
+                                         hiddenLayer[i],
+                                         dropOut[j],
+                                         bSize[k],
+                                         X = presData.train.TF.IDF,
+                                         Y = presTarget.train.TF.IDF.OH,
+                                         XVal = presData.val.TF.IDF,
+                                         YVal = presTarget.val.TF.IDF.OH)
+    }
+  }
+}
+
+maxValues = c(max(reluArray),
+              max(seluArray),
+              max(tanhArray),
+              max(sigmArray))
+
+which.max(reluArray)
+
+bestActF = actFunc[which.max(maxValues)]
+bestH = hiddenLayer[6]
+bestDP = dropOut[1]
+bestB = bSize[1]
+
+## Bag-Of-Words Keras Tuning
+
+reluBOWArray = array(0, dim = c(length(hiddenLayer), 
+                                length(dropOut),
+                                length(bSize)))
+
+for (i in 1:length(hiddenLayer)){
+  
+  for (j in 1:length(dropOut)){
+    
+    for (k in 1:length(bSize)){
+      
+      reluBOWArray[i, j, k] =  kerasHPTuning(actFunc[1],
+                                             hiddenLayer[i],
+                                             dropOut[j],
+                                             bSize[k],
+                                             X = presData.train.BOW.NEW,
+                                             Y = presTarget.train.BOW.OH,
+                                             XVal = presData.val.BOW,
+                                             YVal = presTarget.val.BOW.OH)
+    }
+  }
+}
+
+bestBOWActF = actFunc[1]
+bestBOWH = hiddenLayer[3]
+bestBOWDP = dropOut[4]
+bestBOWB = bSize[6]
+
+##### Keras Function for Tuning Number of Layers
+
+kerasLayerTuning = function(nLayer, X, Y, XVal, YVal){
+  
+  dim = dim(X)
+  nn = keras_model_sequential()
+  
+  if (nLayer == 1){
+    
+    nn %>% 
+      layer_dense(units = bestH, 
+                  activation = bestActF, 
+                  input_shape = dim[2]) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = presNum, activation = "softmax")
+    
+    summary(nn)
+    
+    nn %>% compile(
+      loss = "categorical_crossentropy",
+      optimizer = optimizer_rmsprop(learning_rate = 0.01),
+      metrics = c('accuracy'),
+    )
+    
+    nn.History = nn %>% fit(
+      X, Y, 
+      epochs = 10, batch_size = bestB,
+      validation_data = list(XVal, YVal),
+      verbose = 1, shuffle = TRUE
+    )
+  }
+  
+  if (nLayer == 2){
+    
+    nn %>% 
+      layer_dense(units = bestH, 
+                  activation = bestActF, 
+                  input_shape = dim[2]) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = bestH/2, 
+                  activation = bestActF) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = presNum, activation = "softmax")
+    
+    summary(nn)
+    
+    nn %>% compile(
+      loss = "categorical_crossentropy",
+      optimizer = optimizer_rmsprop(learning_rate = 0.01),
+      metrics = c('accuracy'),
+    )
+    
+    nn.History = nn %>% fit(
+      X, Y, 
+      epochs = 10, batch_size = bestB,
+      validation_data = list(XVal, YVal),
+      verbose = 1, shuffle = TRUE
+    )
+  }
+  
+  if (nLayer == 3){
+    
+    nn %>% 
+      layer_dense(units = bestH, 
+                  activation = bestActF, 
+                  input_shape = dim[2]) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = bestH/2, 
+                  activation = bestActF) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = bestH/4, 
+                  activation = bestActF) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = presNum, activation = "softmax")
+    
+    summary(nn)
+    
+    nn %>% compile(
+      loss = "categorical_crossentropy",
+      optimizer = optimizer_rmsprop(learning_rate = 0.01),
+      metrics = c('accuracy'),
+    )
+    
+    nn.History = nn %>% fit(
+      X, Y, 
+      epochs = 10, batch_size = bestB,
+      validation_data = list(XVal, YVal),
+      verbose = 1, shuffle = TRUE
+    )
+  }
+  
+  if (nLayer == 4){
+    
+    nn %>% 
+      layer_dense(units = bestH, 
+                  activation = bestActF, 
+                  input_shape = dim[2]) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = bestH/2, 
+                  activation = bestActF) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = bestH/4, 
+                  activation = bestActF) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = bestH/8, 
+                  activation = bestActF) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = presNum, activation = "softmax")
+    
+    summary(nn)
+    
+    nn %>% compile(
+      loss = "categorical_crossentropy",
+      optimizer = optimizer_rmsprop(learning_rate = 0.01),
+      metrics = c('accuracy'),
+    )
+    
+    nn.History = nn %>% fit(
+      X, Y, 
+      epochs = 10, batch_size = bestB,
+      validation_data = list(XVal, YVal),
+      verbose = 1, shuffle = TRUE
+    )
+  }
+  
+  return(mean(nn.History$metrics$val_accuracy[5:10]))
+}
+
+layers = 1:4
+layError = c()
+for (l in 1:length(layers)){
+  
+  layError[l] = kerasLayerTuning(layers[l],
+                                 X = presData.train.TF.IDF,
+                                 Y = presTarget.train.TF.IDF.OH,
+                                 XVal = presData.val.TF.IDF,
+                                 YVal = presTarget.val.TF.IDF.OH)
+  }
+
+
+# Creating Feed-Forward Neural Network Model
+
 ## Bag-Of-Words
 
-bowFit.FF.NN1 = keras_model_sequential()
+bowFit.FF.NN = keras_model_sequential()
 
-bowFit.FF.NN1 %>% 
-  layer_dense(units = dimensions[1]/10, 
-              activation = "relu", 
+bowFit.FF.NN %>% 
+  layer_dense(units = bestBOWH, 
+              activation = bestBOWActF, 
               input_shape = dimensions[2]) %>%
-  layer_dropout(rate = 0.25) %>%
+  layer_dropout(rate = bestBOWDP) %>%
   layer_dense(units = presNum, activation = "softmax")
 
-summary(bowFit.FF.NN1)
+summary(bowFit.FF.NN)
 
-bowFit.FF.NN1 %>% compile(
+bowFit.FF.NN %>% compile(
   loss = "categorical_crossentropy",
   optimizer = optimizer_rmsprop(learning_rate = 0.01),
   metrics = c('accuracy'),
 )
 
-bowFit.FF.NN1.History = bowFit.FF.NN1 %>% fit(
+bowFit.FF.NN.History = bowFit.FF.NN %>% fit(
   presData.train.BOW.NEW, presTarget.train.BOW.OH, 
-  epochs = 20, batch_size = 100,
-  verbose = 1, shuffle = TRUE
-)
-
-bowFit.FF.NN1.History = bowFit.FF.NN1 %>% fit(
-  presData.train.BOW.NEW, presTarget.train.BOW.OH, 
-  epochs = 20, batch_size = 100,
+  epochs = 40, batch_size = bestBOWB,
   validation_data = list(presData.val.BOW, presTarget.val.BOW.OH),
   verbose = 1, shuffle = TRUE
 )
 
-plot(bowFit.FF.NN1.History)
+plot(bowFit.FF.NN.History)
 
 ## TF-IDF
 
 dimensions.tf.idf = dim(presData.train.TF.IDF)
 
-tf.idf.Fit.FF.NN1 = keras_model_sequential()
+tf.idf.Fit.FF.NN = keras_model_sequential()
 
-tf.idf.Fit.FF.NN1 %>% 
-  layer_dense(units = dimensions.tf.idf[1]/10, 
-              activation = "relu", 
-              input_shape = dimensions[2]) %>%
-  layer_dropout(rate = 0.25) %>%
+tf.idf.Fit.FF.NN %>% 
+  layer_dense(units = bestH, 
+              activation = bestActF, 
+              input_shape = dimensions.tf.idf[2]) %>%
+  layer_dropout(rate = bestBOWDP) %>%
   layer_dense(units = presNum, activation = "softmax")
 
-summary(tf.idf.Fit.FF.NN1)
+summary(tf.idf.Fit.FF.NN)
 
-tf.idf.Fit.FF.NN1 %>% compile(
+tf.idf.Fit.FF.NN %>% compile(
   loss = "categorical_crossentropy",
   optimizer = optimizer_rmsprop(learning_rate = 0.01),
   metrics = c('accuracy'),
 )
 
-tf.idf.Fit.FF.NN1.History = tf.idf.Fit.FF.NN1 %>% fit(
+tf.idf.Fit.FF.NN.History = tf.idf.Fit.FF.NN %>% fit(
   presData.train.TF.IDF, presTarget.train.TF.IDF.OH, 
-  epochs = 20, batch_size = 100,
+  epochs = 20, batch_size = bestB,
   validation_data = list(presData.val.TF.IDF, presTarget.val.TF.IDF.OH),
   verbose = 1, shuffle = TRUE
 )
 
-plot(tf.idf.Fit.FF.NN1.History)
-
-
+plot(tf.idf.Fit.FF.NN.History)
 
 ##### Use on Test Data [ONLY ONCE]
 
-bowFit.FF.NN1.testPredictions = bowFit.FF.NN1 %>% 
+bowFit.FF.NN.testPredictions = bowFit.FF.NN %>% 
   predict(presData.test.BOW) %>% 
   k_argmax() %>% 
   as.numeric()
 
-bowFit.FF.NN1.tab = table(presTarget.test.BOW, 
-                          bowFit.FF.NN1.testPredictions)
-bowFit.FF.NN1.ClassError = (1 - round(sum(diag(bowFit.FF.NN1.tab))/sum(bowFit.FF.NN1.tab), 3))
+bowFit.FF.NN.tab = table(presTarget.test.BOW, 
+                          bowFit.FF.NN.testPredictions)
+bowFit.FF.NN.ClassError = (1 - round(sum(diag(bowFit.FF.NN.tab))/sum(bowFit.FF.NN.tab), 3))
 
-tf.idf.Fit.FF.NN1.testPredictions = tf.idf.Fit.FF.NN1 %>% 
+tf.idf.Fit.FF.NN.testPredictions = tf.idf.Fit.FF.NN %>% 
   predict(presData.test.TF.IDF) %>% 
   k_argmax() %>% 
   as.numeric()
 
-tf.idf.Fit.FF.NN1.tab = table(presTarget.test.TF.IDF, 
-                              tf.idf.Fit.FF.NN1.testPredictions)
+tf.idf.Fit.FF.NN.tab = table(presTarget.test.TF.IDF, 
+                              tf.idf.Fit.FF.NN.testPredictions)
 
-tf.idf.Fit.FF.NN1.ClassError = (1 - round(sum(diag(tf.idf.Fit.FF.NN1.tab))/sum(tf.idf.Fit.FF.NN1.tab), 3))
+tf.idf.Fit.FF.NN.ClassError = (1 - round(sum(diag(tf.idf.Fit.FF.NN.tab))/sum(tf.idf.Fit.FF.NN.tab), 3))
 
 
+## Save Output for use later
+
+save(reluArray, seluArray,
+     tanhArray, sigmArray,
+     reluBOWArray,
+     layError,
+     bowFit.FF.NN.History, tf.idf.Fit.FF.NN.History,
+     bowFit.FF.NN.testPredictions, bowFit.FF.NN.tab, bowFit.FF.NN.ClassError,
+     tf.idf.Fit.FF.NN.testPredictions, tf.idf.Fit.FF.NN.tab, tf.idf.Fit.FF.NN.ClassError,
+     file = "FeedForwardNN_Data.RData")
