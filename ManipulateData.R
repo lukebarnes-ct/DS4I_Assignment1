@@ -288,3 +288,8 @@ save(speechSentences, bagWords, speechTDF,
      validationSentencesBOW, validationSentences.TF.IDF,
      testSentencesBOW, testSentences.TF.IDF,
      file = "SetSentenceData.RData")
+
+save(trainingSentencesBOW, trainingSentences.TF.IDF,
+     validationSentencesBOW, validationSentences.TF.IDF,
+     testSentencesBOW, testSentences.TF.IDF,
+     file = "dataForNN.RData")

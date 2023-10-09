@@ -119,3 +119,56 @@ toc()
 
 resBOW.RF = gridsearchBOW.RF$results
 gridsearchBOW.RF$finalModel
+
+
+
+### FF Neural Network
+
+bowFit.FF.NN1 %>% 
+  layer_dense(units = dimensions[1]/10, 
+              activation = "sigmoid", 
+              input_shape = dimensions[2]) %>%
+  layer_dropout(rate = 0.15) %>%
+  layer_dense(units = presNum, activation = "softmax")
+
+bowFit.FF.NN1 %>% compile(
+  loss = "categorical_crossentropy",
+  optimizer = optimizer_sgd(learning_rate = 0.01),
+  metrics = c('accuracy'),
+)
+
+bowFit.FF.NN1.History = bowFit.FF.NN1 %>% fit(
+  presData.train.BOW, presTarget.train.BOW.OH, 
+  epochs = 3, batch_size = 10,
+  validation_split = 0.1,
+  #validation_data = list(presData.val.BOW, presTarget.val.BOW.OH),
+  verbose = 1, shuffle = FALSE
+)
+
+
+class_weight = list("0" = 1050,
+                    "1" = 1050, 
+                    "2" = 1050, 
+                    "3" = 1050,
+                    "4" = 1050)
+
+column = c()
+for (a in 1:dimensions[2]){
+  sum(is.na(presd))
+}
+
+which(colSums(sampledBOW==0) == nrow(sampledBOW))
+
+scaleFunc = function(x){
+  sc = sum(is.na(x))
+  
+  if (sc == 0){
+    scal = scale(x)
+  }
+  
+  else{
+    scal = rep(0, dim(x))
+  }
+  
+  return(scal)
+}
