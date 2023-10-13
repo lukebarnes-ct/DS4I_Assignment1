@@ -6,48 +6,92 @@ bibliography: references.bib
 
 # Introduction.
 
-The SONA (State of the Nation Address) is a highlight of the South African political calendar. Every year, and after every election, the South African president addresses parliament and the nation with a speech that highlights what the government has achieved over the past year and outlines the government's important objectives over the next year. Since the beginning of 1994, there have been 36 SONA's, by 6 presidents, each with their own distinct tone and diction. The distinct nature of these speeches and their structure suggest that given a sentence from one of the speeches, the president who delivered it is identifiable to a human who has seen the speeches before. Could predictive classification models identify the president solely from a sentence from one of their speeches? 
+The SONA (State of the Nation Address) is a highlight of the South African political calendar. Every year, and after every election, the South African president addresses parliament and the nation with a speech that highlights what the government has achieved over the past year and outlines the government's important objectives over the next year. Since the beginning of 1994, there have been 36 SONA's, by 6 presidents, each with their own distinct tone and diction. The distinct nature of these speeches and their structure suggest that given a sentence from one of the speeches, the president who delivered it is identifiable to a human who has seen the speeches before. Could predictive classification models identify the president solely from a sentence from one of their speeches?
 
-Analysis of the speeches given by presidents of other countries is abundant in the literature *[see @miranda2021exploring; @najarzadegan2017critical; @budiharto2018prediction]*. These analyses focus on sentiment analysis and topic modelling. The purpose of this paper is to compare the ability of three classification algorithms to predict the South African president given a sentence from one of their speeches. The three classification algorithms that are assessed in this paper are: Classification Trees, Random Forests and Feed Forward Neural Networks. 
+Analysis of the speeches given by presidents of other countries is abundant in the literature [*see @miranda2021exploring; @najarzadegan2017critical; @budiharto2018prediction*]. These analyses focus on sentiment analysis and topic modelling. The purpose of this paper is to compare the ability of three classification algorithms to predict the South African president given a sentence from one of their speeches. The three classification algorithms that are assessed in this paper are: Classification Trees, Random Forests and Feed Forward Neural Networks.
 
-
-# Methodology. 
+# Methodology.
 
 ## Data
 
-Each of the 36 SONA's undergo cleaning and manipulation to create datasets that are usable by the classification models in the prediction process. 
+Each of the 36 SONA's undergo cleaning and manipulation to create datasets that are usable by the classification models in the prediction process.
 
 ### Data Cleaning
 
-One data frame is created using all 36 speeches. The dataframe consists of the speech identifier (in this instance, the name of the text file for that speech), and the speech itself. The name of the president who gave the speech and the year the speech was delivered are extracted from the speech identifier. The speech date is added to the dataframe by extracting it from the speech itself. Additionally, all unnecessary text is removed from each of the speeches. 
+One data frame is created using all 36 speeches. The dataframe consists of the speech identifier (in this instance, the name of the text file for that speech), and the speech itself. The name of the president who gave the speech and the year the speech was delivered are extracted from the speech identifier. The speech date is added to the dataframe by extracting it from the speech itself. Additionally, all unnecessary text is removed from each of the speeches.
 
 ### Data Manipulation
 
-The cleaned data set is then used to seperate each of the speeches into their sentences using tokenisation. The apostrophes and numbers are removed from each sentence in the data frame. A sentence identifier is added to the data frame. Columns are removed from the sentence data frame such that it only consists of the president name, the year of the speech, the speech sentences and the sentence identifier. 
+The cleaned data set is then used to seperate each of the speeches into their sentences using tokenisation. The apostrophes and numbers are removed from each sentence in the data frame. A sentence identifier is added to the data frame. Columns are removed from the sentence data frame such that it only consists of the president name, the year of the speech, the speech sentences and the sentence identifier.
 
 The sentence data frame is then used to create a word data frame that consists of the words found in each of the speech sentences. This is similarly done using tokenisation. Each word now has it's own row in the dataframe, along with its sentence identifier, the name of the president who said the sentence the word is in and the year of the speech. Stop words are removed from the dataframe to improve training model efficiency, and increase the separability between the different president's speeches.
 
 ## Bag of Words Models
 
-Two forms of word frequencies are considered and compared in this paper. Count Frequency and Term Frequency–Inverse Document Frequency (TF-IDF). Count frequency is a measure of the number of occurences of the word in the data frame. TF-IDF use a combination of relative frequencies and document frequencies to assign a score to each word in the data frame. For these frequency data frames to be usable by the classification algorithms for predictive modelling, the data frames have to be structured such that each word has its own column with its frequencies. These frequency data frames are then joined with the sentence data frame to form the model data frames. These new data frames have a column for each word in the word data frame. Each row of the model data frame reflects a sentence said by one of the presidents. The president column highlights the surname of the president who said that sentence. The remaining columns represent the count frequency or TF-IDF of each word in that sentence. These data frames can then be used to train classification algorithms to predict the president who said the sentence. For the rest of this paper, when the bag of words data frame is referenced, it refers to the data frame with word columns that hold the count frequency of the words in the sentence. In contrast, the TF-IDF data frame refers to data set with word columns that contain the tf-id frequency of the word in the sentence. 
+Two forms of word frequencies are considered and compared in this paper. Count Frequency and Term Frequency--Inverse Document Frequency (TF-IDF). Count frequency is a measure of the number of occurences of the word in the data frame. TF-IDF use a combination of relative frequencies and document frequencies to assign a score to each word in the data frame. For these frequency data frames to be usable by the classification algorithms for predictive modelling, the data frames have to be structured such that each word has its own column with its frequencies. These frequency data frames are then joined with the sentence data frame to form the model data frames. These new data frames have a column for each word in the word data frame. Each row of the model data frame reflects a sentence said by one of the presidents. The president column highlights the surname of the president who said that sentence. The remaining columns represent the count frequency or TF-IDF of each word in that sentence. These data frames can then be used to train classification algorithms to predict the president who said the sentence. For the rest of this paper, when the bag of words data frame is referenced, it refers to the data frame with word columns that hold the count frequency of the words in the sentence. In contrast, the TF-IDF data frame refers to data set with word columns that contain the tf-id frequency of the word in the sentence.
 
 ## Classification Algorithms
 
 ### Classification Trees
 
-Classification Trees are one of the more simple predictive models to implement and use. They utilize recursive partitioning to split the observations into their different classes based on the most influential variables. The end result is a tree-like structure with a variable on each "branch" that indicates a partition in the feature space. The tree can then be used to classify an observation it has not seen before based on where it resides in the feature space. 
+Classification Trees are one of the more simple predictive models to implement and use. They utilize recursive partitioning to split the observations into their different classes based on the most influential variables. The end result is a tree-like structure with a variable on each "branch" that indicates a partition in the feature space. The tree can then be used to classify an observation it has not seen before based on where it resides in the feature space.
 
 ### Random Forests
 
-Random Forests are an extension of decision trees, and thus classification trees. Where as Classification Trees classify an observation based off of a singular decision tree, random forests use an ensemble of classification trees to decide the class an observation belongs to. Each tree is formed using a subset of the variables in the data and a sample of the observations to ensure tree variation in the forest. 
+Random Forests are an extension of decision trees, and thus classification trees. Where as Classification Trees classify an observation based off of a singular decision tree, random forests use an ensemble of classification trees to decide the class an observation belongs to. Each tree is formed using a subset of the variables in the data and a sample of the observations to ensure tree variation in the forest.
 
 ### Feed Forward Neural Network
 
-Feed Forward Neural Networks are one of the more complex predictive models used and implemented in this study. The classification feed forward neural networks take in a a data frame of predictors,  pass them through a hidden layer or multiple hidden layers of nodes (each with their own weight), and outputs the probability of belonging to each class. Activation functions are applied to both the hidden layer and the output layer. The activation function applied to the hidden layers allow for more complex relationship identification by the network. The activation function applied to output layer ensures that the predictions are in the same form as the response. For classification problems, the output layer has the soft-max activation function applied to it. The classification network uses a cross entropy loss function to measure the performance of the network. It then uses an backpropagation to find the weights that most minimise the loss function. 
+Feed Forward Neural Networks are one of the more complex predictive models used and implemented in this study. The classification feed forward neural networks take in a a data frame of predictors, pass them through a hidden layer or multiple hidden layers of nodes (each with their own weight), and outputs the probability of belonging to each class. Activation functions are applied to both the hidden layer and the output layer. The activation function applied to the hidden layers allow for more complex relationship identification by the network. The activation function applied to output layer ensures that the predictions are in the same form as the response. For classification problems, the output layer has the soft-max activation function applied to it. The classification network uses a cross entropy loss function to measure the performance of the network. It then uses an backpropagation to find the weights that most minimise the loss function.
 
-# Results. 
+# Results.
+
+```{r}
+
+### Libraries
+
+library(tidyverse)
+library(tidytext)
+library(tokenizers)
+library(gghighlight)
+library(tictoc)
+
+### Load Cleaned Data
+
+load("SonaData.RData")
+
+```
+
 
 ## Exploratory Data Analysis
+
+Before any predictive models are implemented, exploratory data analysis (EDA) is conducted on the speeches. The EDA highlights numerous interesting and substantial aspects of the speech data set.
+
+```{r}
+
+### Exploratory Data Analysis
+
+words = tokenize_words(sona$speech)
+
+## Plot the number of words against the year
+
+edaPlotData = data.frame("Year" = sona$year,
+                         "nWords" = sapply(words, length),
+                         "President" = sona$president_13)
+
+ggplot(edaPlotData, aes(x = Year, y = nWords, color = President, shape = President)) +
+  geom_point(size = 7) +
+  xlab("Year") + ylab("Number of Words") +
+  scale_x_discrete(name = "Year", 
+                   breaks = c("1994","1999","2004", "2009", 
+                              "2014", "2019", "2023")) +
+  scale_y_continuous(name = "Number of Words", 
+                     breaks = c(3000, 6000, 9000)) +
+  scale_shape_manual(values = rep(18, 6)) +
+  theme_bw(base_size = 12)
+
+```
+
 
 ## Classification Trees
 
