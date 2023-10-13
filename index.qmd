@@ -1,7 +1,58 @@
 ---
-title: "Welcome!"
+title: "Predicting the President: An exploration and comparison of classification algorithms."
+
+bibliography: references.bib
 ---
 
-This is a Quarto website.
+# Introduction.
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+The SONA (State of the Nation Address) is a highlight of the South African political calendar. Every year, and after every election, the South African president addresses parliament and the nation with a speech that highlights what the government has achieved over the past year and outlines the government's important objectives over the next year. Since the beginning of 1994, there have been 36 SONA's, by 6 presidents, each with their own distinct tone and diction. The distinct nature of these speeches and their structure suggest that given a sentence from one of the speeches, the president who delivered it is identifiable to a human who has seen the speeches before. Could predictive classification models identify the president solely from a sentence from one of their speeches? 
+
+Analysis of the speeches given by presidents of other countries is abundant in the literature *[see @miranda2021exploring; @najarzadegan2017critical; @budiharto2018prediction]*. These analyses focus on sentiment analysis and topic modelling. The purpose of this paper is to compare the ability of three classification algorithms to predict the South African president given a sentence from one of their speeches. The three classification algorithms that are assessed in this paper are: Classification Trees, Random Forests and Feed Forward Neural Networks. 
+
+
+# Methodology. 
+
+## Data
+
+Each of the 36 SONA's undergo cleaning and manipulation to create datasets that are usable by the classification models in the prediction process. 
+
+### Data Cleaning
+
+One data frame is created using all 36 speeches. The dataframe consists of the speech identifier (in this instance, the name of the text file for that speech), and the speech itself. The name of the president who gave the speech and the year the speech was delivered are extracted from the speech identifier. The speech date is added to the dataframe by extracting it from the speech itself. Additionally, all unnecessary text is removed from each of the speeches. 
+
+### Data Manipulation
+
+The cleaned data set is then used to seperate each of the speeches into their sentences using tokenisation. The apostrophes and numbers are removed from each sentence in the data frame. A sentence identifier is added to the data frame. Columns are removed from the sentence data frame such that it only consists of the president name, the year of the speech, the speech sentences and the sentence identifier. 
+
+The sentence data frame is then used to create a word data frame that consists of the words found in each of the speech sentences. This is similarly done using tokenisation. Each word now has it's own row in the dataframe, along with its sentence identifier, the name of the president who said the sentence the word is in and the year of the speech. Stop words are removed from the dataframe to improve training model efficiency, and increase the separability between the different president's speeches.
+
+### Bag of Words Models
+
+Two forms of word frequencies are considered and compared in this paper. Count Frequency and Term Frequency–Inverse Document Frequency (TF-IDF). Count frequency is a measure of the number of occurences of the word in the data frame. TF-IDF use a combination of relative frequencies and document frequencies to assign a score to each word in the data frame. For these frequency data frames to be usable by the classification algorithms for predictive modelling, the data frames have to be structured such that each word has its own column with its frequencies. These frequency data frames are then joined with the sentence data frame to form the model data frames. These new data frames have a column for each word in the word data frame. Each row of the model data frame reflects a sentence said by one of the presidents. The president column highlights the surname of the president who said that sentence. The remaining columns represent the count frequency or TF-IDF of each word in that sentence. These dataframes can then be used to train classification algorithms to predict the president who said the sentence. For the rest of this paper, when the bag of words data frame is referenced, it refers to the data frame with word columns that hold the count frequency of the words in the sentence. In contrast, the TF-IDF data frame refers to data set with word columns that contain the tf-id frequency of the word in the sentence. 
+
+## Classification Algorithms
+
+### Classification Trees
+
+### Random Forests
+
+### Feed Forward Neural Network
+
+# Results. 
+
+## Exploratory Data Analysis
+
+## Classification Trees
+
+## Random Forests
+
+## Feed Forward Neural Network
+
+### Hyperparameter Tuning
+
+# Discussion.
+
+# Conclusion.
+
+# References.
