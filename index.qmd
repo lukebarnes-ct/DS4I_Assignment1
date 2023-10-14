@@ -65,9 +65,9 @@ load("SonaData.RData")
 
 ## Exploratory Data Analysis
 
-Before any predictive models are implemented, exploratory data analysis (EDA) is conducted on the speeches. The EDA highlights numerous interesting and substantial aspects of the speech data set.
+Before any predictive models are implemented, exploratory data analysis (EDA) is conducted on the speeches. The EDA highlights numerous interesting and substantial aspects of the speech data set. Below, Figure \@ref(fig:noOfWords) shows the number of words spoken by each president in each of the speeches. There are many fascinating features of each President's speeches that are identifiable. President Zuma uses fewer words in his SONA's in comparison to the other presidents. The address given by de Klerk pre elections in 1994 is the shortest speech, by a substantial margin. President Mbeki and President Ramaphosa have the most words in their speeches and follow a similar sentiment in their first SONA after replacing the previous president. Mbeki's first two speeches are comparable in length to Mandela's speeches. Equivalently, Ramaphosa's first address has a similar length to Zuma's speeches. The consistency of speech length to previous president's is seemingly an important and notable factor for speech writers when producing the first address for a newly elected president. 
 
-```{r}
+```{r noOfWords, fig.align='center', fig.height=9, fig.width=12, fig.cap="Number of Words said in each of the SONA's, colour coded by president.", echo=FALSE}
 
 ### Exploratory Data Analysis
 
@@ -92,6 +92,7 @@ ggplot(edaPlotData, aes(x = Year, y = nWords, color = President, shape = Preside
 
 ```
 
+The most important feature highlighted is that the data frame only has one SONA for both de Klerk and President Motlanthe. The reason why it is notable is that the sentence data frame is imbalanced. The multi-year presidents have over 1500 sentences in the data frame. In contrast, de Klerk and President Motlanthe both have under 300 sentences. If the entire data frame is used as is, these presidents would be disproportionately represented. The classification algorithms are likely to struggle to capture the class structure of sentences and develop a bias towards the president with the majority of the observations in the data frame. 
 
 ## Classification Trees
 
