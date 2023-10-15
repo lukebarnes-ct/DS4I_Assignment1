@@ -2,7 +2,7 @@
 title: "Most Commonly Used Words"
 ---
 
-```{r}
+```{r echo=FALSE}
 
 ### Libraries
 suppressMessages(library(tidyverse))
@@ -18,7 +18,7 @@ load("SonaData.RData")
 
 The top 20 words most frequently used by each of the four multi-year presidents in their SONA's are shown below. As is expected, there are many commonly used words across all four presidents. "Government" and "South" are both in the Top 5 words for each of the presidents. Intuitively, this is sensible as the expectation of the SONA is for the president, as leader of the government, to discuss the government's achievements over the past year and their hopes for the next year. Similarly, the word south is commonly used by each president for obvious reasons. A simple overview of these commonly used words would suggest that the most common theme across all of the speeches for each president is that of economic development and growth. As a developing country, it is logical for the president's to assure the nation in these annual speeches of the development the economy has undergone and the hope for the growth it will undergo. 
 
-```{r mandelaCount, fig.align='center', fig.height=9, fig.width=12, fig.cap="President Mandela's top 20 most frequently used words in his speeches. The top 5 are highlighted in pink.", echo=FALSE}
+```{r fig-mandelaCount, fig.align='center', fig.height=9, fig.width=12, fig.cap="President Mandela's top 20 most frequently used words in his speeches. The top 5 are highlighted in pink.", echo=FALSE}
 
 ## Highlight the most commonly used words for each President
 
@@ -45,7 +45,7 @@ speechWords %>%
 ```
 
 
-```{r mbekiCount, fig.align='center', fig.height=9, fig.width=12, fig.cap="President Mbeki's top 20 most frequently used words in his speeches. The top 5 are highlighted in cyan.", echo=FALSE}
+```{r fig-mbekiCount, fig.align='center', fig.height=9, fig.width=12, fig.cap="President Mbeki's top 20 most frequently used words in his speeches. The top 5 are highlighted in cyan.", echo=FALSE}
 
 # Mbeki's most commonly used words
 
@@ -61,7 +61,7 @@ speechWords %>%
 ```
 
 
-```{r zumaCount, fig.align='center', fig.height=9, fig.width=12, fig.cap="President Zuma's top 20 most frequently used words in his speeches. The top 5 are highlighted in green.", echo=FALSE}
+```{r fig-zumaCount, fig.align='center', fig.height=9, fig.width=12, fig.cap="President Zuma's top 20 most frequently used words in his speeches. The top 5 are highlighted in green.", echo=FALSE}
 
 # Zuma's most commonly used words
 
@@ -78,7 +78,7 @@ speechWords %>%
 ```
 
 
-```{r ramaphosaCount, fig.align='center', fig.height=9, fig.width=12, fig.cap="President Ramaphosa's top 20 most frequently used words in his speeches. The top 5 are highlighted in purple.", echo=FALSE}
+```{r fig-ramaphosaCount, fig.align='center', fig.height=9, fig.width=12, fig.cap="President Ramaphosa's top 20 most frequently used words in his speeches. The top 5 are highlighted in purple.", echo=FALSE}
 
 # Ramaphosa's most commonly used words
 

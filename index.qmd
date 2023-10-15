@@ -4,13 +4,13 @@ title: "Predicting the President: An exploration and comparison of classificatio
 bibliography: references.bib
 ---
 
-# Introduction.
+# 1. Introduction.
 
 The SONA (State of the Nation Address) is a highlight of the South African political calendar. Every year, and after every election, the South African president addresses parliament and the nation with a speech that highlights what the government has achieved over the past year and outlines the government's important objectives over the next year. Since the beginning of 1994, there have been 36 SONA's, by 6 presidents, each with their own distinct tone and diction. The distinct nature of these speeches and their structure suggest that given a sentence from one of the speeches, the president who delivered it is identifiable to a human who has seen the speeches before. Could predictive classification models identify the president solely from a sentence from one of their speeches?
 
 Analysis of the speeches given by presidents of other countries is abundant in the literature [*see @miranda2021exploring; @najarzadegan2017critical; @budiharto2018prediction*]. These analyses focus on sentiment analysis and topic modelling. The purpose of this paper is to compare the ability of three classification algorithms to predict the South African president given a sentence from one of their speeches. The three classification algorithms that are assessed in this paper are: Classification Trees, Random Forests and Feed Forward Neural Networks.
 
-# Methodology.
+# 2. Methodology.
 
 ## Data
 
@@ -19,6 +19,120 @@ Each of the 36 SONA's undergo cleaning and manipulation to create datasets that 
 ### Data Cleaning
 
 One data frame is created using all 36 speeches. The dataframe consists of the speech identifier (in this instance, the name of the text file for that speech), and the speech itself. The name of the president who gave the speech and the year the speech was delivered are extracted from the speech identifier. The speech date is added to the dataframe by extracting it from the speech itself. Additionally, all unnecessary text is removed from each of the speeches.
+
+```{r echo=FALSE}
+
+### Libraries (that need to be ran when knitting the file)
+
+suppressMessages(library(tidyverse))
+library(tidytext)
+library(tokenizers)
+library(gghighlight)
+library(tictoc)
+
+```
+
+```{r eval=FALSE, echo=FALSE}
+
+### Libraries (that do not need to be ran when knitting the file)
+
+library(rpart)
+library(ranger)
+library(keras)
+library(reticulate)
+library(tensorflow)
+
+## Cleaning Speech Data into usable dataframes
+
+filenames = c('1994_post_elections_Mandela.txt', '1994_pre_elections_deKlerk.txt', '1995_Mandela.txt', '1996_Mandela.txt', '1997_Mandela.txt', '1998_Mandela.txt', 
+               '1999_post_elections_Mandela.txt', '1999_pre_elections_Mandela.txt', '2000_Mbeki.txt', '2001_Mbeki.txt', '2002_Mbeki.txt', '2003_Mbeki.txt', 
+               '2004_post_elections_Mbeki.txt', '2004_pre_elections_Mbeki.txt', '2005_Mbeki.txt', '2006_Mbeki.txt', '2007_Mbeki.txt', '2008_Mbeki.txt', 
+               '2009_post_elections_Zuma.txt', '2009_pre_elections_ Motlanthe.txt', '2010_Zuma.txt', '2011_Zuma.txt', '2012_Zuma.txt', '2013_Zuma.txt', 
+               '2014_post_elections_Zuma.txt', '2014_pre_elections_Zuma.txt', '2015_Zuma.txt', '2016_Zuma.txt', '2017_Zuma.txt', '2018_Ramaphosa.txt', 
+               '2019_post_elections_Ramaphosa.txt', '2019_pre_elections_Ramaphosa.txt', '2020_Ramaphosa.txt', '2021_Ramaphosa.txt', '2022_Ramaphosa.txt', '2023_Ramaphosa.txt')
+
+
+this_speech = c()
+this_speech[1] = readChar('Data/1994_post_elections_Mandela.txt', nchars = 27050)
+this_speech[2] = readChar('Data/1994_pre_elections_deKlerk.txt', nchars = 12786)
+this_speech[3] = readChar('Data/1995_Mandela.txt', nchars = 39019)
+this_speech[4] = readChar('Data/1996_Mandela.txt', nchars = 39524)
+this_speech[5] = readChar('Data/1997_Mandela.txt', nchars = 37489)
+this_speech[6] = readChar('Data/1998_Mandela.txt', nchars = 45247)
+this_speech[7] = readChar('Data/1999_post_elections_Mandela.txt', nchars = 34674)
+this_speech[8] = readChar('Data/1999_pre_elections_Mandela.txt', nchars = 41225)
+this_speech[9] = readChar('Data/2000_Mbeki.txt', nchars = 37552)
+this_speech[10] = readChar('Data/2001_Mbeki.txt', nchars = 41719)
+this_speech[11] = readChar('Data/2002_Mbeki.txt', nchars = 50544)
+this_speech[12] = readChar('Data/2003_Mbeki.txt', nchars = 58284)
+this_speech[13] = readChar('Data/2004_post_elections_Mbeki.txt', nchars = 34590)
+this_speech[14] = readChar('Data/2004_pre_elections_Mbeki.txt', nchars = 39232)
+this_speech[15] = readChar('Data/2005_Mbeki.txt', nchars = 54635)
+this_speech[16] = readChar('Data/2006_Mbeki.txt', nchars = 48643)
+this_speech[17] = readChar('Data/2007_Mbeki.txt', nchars = 48641)
+this_speech[18] = readChar('Data/2008_Mbeki.txt', nchars = 44907)
+this_speech[19] = readChar('Data/2009_post_elections_Zuma.txt', nchars = 31101)
+this_speech[20] = readChar('Data/2009_pre_elections_ Motlanthe.txt', nchars = 47157)
+this_speech[21] = readChar('Data/2010_Zuma.txt', nchars = 26384)
+this_speech[22] = readChar('Data/2011_Zuma.txt', nchars = 33281)
+this_speech[23] = readChar('Data/2012_Zuma.txt', nchars = 33376)
+this_speech[24] = readChar('Data/2013_Zuma.txt', nchars = 36006)
+this_speech[25] = readChar('Data/2014_post_elections_Zuma.txt', nchars = 29403)
+this_speech[26] = readChar('Data/2014_pre_elections_Zuma.txt', nchars = 36233)
+this_speech[27] = readChar('Data/2015_Zuma.txt', nchars = 32860)
+this_speech[28] = readChar('Data/2016_Zuma.txt', nchars = 32464)
+this_speech[29] = readChar('Data/2017_Zuma.txt', nchars = 35981)
+this_speech[30] = readChar('Data/2018_Ramaphosa.txt', nchars = 33290)
+this_speech[31] = readChar('Data/2019_post_elections_Ramaphosa.txt', nchars = 42112)
+this_speech[32] = readChar('Data/2019_pre_elections_Ramaphosa.txt', nchars = 56960)
+this_speech[33] = readChar('Data/2020_Ramaphosa.txt', nchars = 47910)
+this_speech[34] = readChar('Data/2021_Ramaphosa.txt', nchars = 43352)
+this_speech[35] = readChar('Data/2022_Ramaphosa.txt', nchars = 52972)
+this_speech[36] = readChar('Data/2022_Ramaphosa.txt', nchars = 52972)
+
+
+sona = data.frame(filename = filenames, 
+                  speech = this_speech, 
+                  stringsAsFactors = FALSE)
+
+## extract year and president for each speech
+sona$year = str_sub(sona$filename, start = 1, end = 4)
+sona$president_13 = str_remove_all(str_extract(sona$filename, "[dA-Z].*\\."), "\\.")
+
+## clean the sona dataset by adding the date and removing unnecessary text
+replace_reg = '(http.*?(\\s|.$))|(www.*?(\\s|.$))|&amp;|&lt;|&gt;|\n'
+
+sona = sona %>%
+  mutate(speech = str_replace_all(speech, replace_reg , ' ')
+         ,date = str_sub(speech, start = 1, end = 30)
+         ,date = str_replace_all(date, "February", "02")
+         ,date = str_replace_all(date, "June", "06")
+         ,date = str_replace_all(date, "Feb", "02")
+         ,date = str_replace_all(date, "May", "05")
+         ,date = str_replace_all(date, "Jun", "06")
+         ,date = str_replace_all(date, "Thursday, ","")
+         ,date = str_replace_all(date, ' ', '-')        
+         ,date = str_replace_all(date, "[A-z]",'')
+         ,date = str_replace_all(date, '-----', '')
+         ,date = str_replace_all(date, '----', '')
+         ,date = str_replace_all(date, '---', '')
+         ,date = str_replace_all(date, '--', ''))
+
+### Change speeches into sentences
+
+speechList = list()
+# speechList[[1]] = tokenize_sentences(sona$speech[1])
+
+for (i in 1:36){
+  
+  speechList = append(speechList, tokenize_sentences(sona$speech[i]))
+}
+
+# speechList[[1]] = strsplit(sona$speech[1], "(?<=[^.][.][^.])", perl = TRUE)
+
+save(sona, speechList, file = "SonaData.RData")
+
+```
 
 ### Data Manipulation
 
@@ -29,6 +143,187 @@ The sentence data frame is then used to create a word data frame that consists o
 ## Bag of Words Models
 
 Two forms of word frequencies are considered and compared in this paper. Count Frequency and Term Frequency--Inverse Document Frequency (TF-IDF). Count frequency is a measure of the number of occurences of the word in the data frame. TF-IDF use a combination of relative frequencies and document frequencies to assign a score to each word in the data frame. For these frequency data frames to be usable by the classification algorithms for predictive modelling, the data frames have to be structured such that each word has its own column with its frequencies. These frequency data frames are then joined with the sentence data frame to form the model data frames. These new data frames have a column for each word in the word data frame. Each row of the model data frame reflects a sentence said by one of the presidents. The president column highlights the surname of the president who said that sentence. The remaining columns represent the count frequency or TF-IDF of each word in that sentence. These data frames can then be used to train classification algorithms to predict the president who said the sentence. For the rest of this paper, when the bag of words data frame is referenced, it refers to the data frame with word columns that hold the count frequency of the words in the sentence. In contrast, the TF-IDF data frame refers to data set with word columns that contain the tf-id frequency of the word in the sentence.
+
+```{r eval=FALSE, echo=FALSE}
+
+### Load Cleaned Data
+
+load("SonaData.RData")
+
+### Models
+
+# Separate speeches into sentences
+
+speechSentences = as_tibble(sona) %>%
+  rename(president = president_13) %>%
+  unnest_tokens(sentences, speech, token = "sentences") %>%
+  select(president, year, sentences) %>%
+  mutate(sentences, sentences = str_replace_all(sentences, "’", "'")) %>%
+  mutate(sentences, sentences = str_replace_all(sentences, "'", "")) %>%
+  mutate(sentences, sentences = str_remove_all(sentences, "[0-9]")) %>%
+  mutate(sentID = row_number())
+
+wordsWithSentID = speechSentences %>% 
+  unnest_tokens(word, sentences, token = 'regex', pattern = unnest_reg) %>%
+  filter(str_detect(word, '[a-z]')) %>%
+  filter(!word %in% stop_words$word) %>%
+  select(sentID, president, year, word) 
+
+#### Bag-Of-Words Model
+
+bagWords = wordsWithSentID %>%
+  group_by(word) %>%
+  count() %>%
+  ungroup() %>%
+  top_n(200, wt = n) %>%
+  select(-n) 
+
+speechTDF = speechSentences %>%
+  inner_join(wordsWithSentID) %>%
+  group_by(sentID, word) %>%
+  count() %>%  
+  group_by(sentID) %>%
+  mutate(total = sum(n)) %>%
+  ungroup()
+
+# left_join got confused just using president as a variable 
+# due to there being other president variables in speechTDF
+# change to presidentName
+
+bagWords = speechTDF %>%
+  select(sentID, word, n) %>% 
+  pivot_wider(names_from = word, values_from = n, values_fill = 0) %>%
+  left_join(speechSentences %>% 
+              rename(presidentName = president) %>% 
+              select(sentID, presidentName), by = "sentID") %>%
+  select(sentID, presidentName, everything())
+
+table(bagWords$presidentName)
+
+# remove deKlerk and Motlanthe
+# use 1500 sentences from each of the four presidents
+
+sampledBOW = bagWords %>% 
+  filter(presidentName == "Mandela" | presidentName == "Mbeki" | 
+           presidentName == "Ramaphosa" | presidentName == "Zuma") %>%
+  group_by(presidentName) %>% 
+  slice_sample(n = 1500) %>% 
+  ungroup()
+
+sampledBOW
+
+table(sampledBOW$presidentName)
+
+set.seed(2023)
+
+trainingIDSBOW = sampledBOW %>% 
+  group_by(presidentName) %>% 
+  slice_sample(prop = 0.7) %>% 
+  ungroup() %>%
+  select(sentID)
+
+trainingSentencesBOW = sampledBOW %>%
+  right_join(trainingIDSBOW, by = "sentID") %>%
+  select(-sentID)
+
+# if else repeat while function for in next break
+
+trainingSentencesBOW = trainingSentencesBOW[, -c(495, 776, 1651)]
+
+tAndVSentencesBOW = sampledBOW %>%
+  anti_join(trainingIDSBOW, by = "sentID")
+
+validationIDSBOW = tAndVSentencesBOW %>%
+  group_by(presidentName) %>% 
+  slice_sample(prop = 0.7) %>% 
+  ungroup() %>%
+  select(sentID)
+
+validationSentencesBOW = tAndVSentencesBOW %>%
+  right_join(validationIDSBOW, by = "sentID") %>%
+  select(-sentID)
+
+validationSentencesBOW = validationSentencesBOW[, -c(495, 776, 1651)]
+
+testSentencesBOW = tAndVSentencesBOW %>%
+  anti_join(validationIDSBOW, by = "sentID") %>%
+  select(-sentID)
+
+testSentencesBOW = testSentencesBOW[, -c(495, 776, 1651)]
+
+#### TF-IDF Model
+
+tf.idf = speechTDF %>%
+  bind_tf_idf(word, sentID, n) %>% 
+  select(sentID, word, tf_idf) %>%
+  pivot_wider(names_from = word, 
+              values_from = tf_idf, 
+              values_fill = 0) %>%  
+  left_join(speechSentences %>% 
+              rename(presidentName = president) %>% 
+              select(sentID, presidentName), by = "sentID")
+
+# remove deKlerk and Motlanthe
+# use 1500 sentences from each of the four presidents
+
+sampled.TF.IDF = tf.idf %>% 
+  filter(presidentName == "Mandela" | presidentName == "Mbeki" | 
+           presidentName == "Ramaphosa" | presidentName == "Zuma") %>%
+  group_by(presidentName) %>% 
+  slice_sample(n = 1500) %>% 
+  ungroup()
+
+table(sampled.TF.IDF$presidentName)
+
+set.seed(2023)
+
+trainingIDS.TF.IDF = sampled.TF.IDF %>% 
+  group_by(presidentName) %>% 
+  slice_sample(prop = 0.7) %>% 
+  ungroup() %>%
+  select(sentID)
+
+trainingSentences.TF.IDF = sampled.TF.IDF %>%
+  right_join(trainingIDS.TF.IDF, by = "sentID") %>%
+  select(-sentID)
+
+# if else repeat while function for in next break
+trainingSentences.TF.IDF = trainingSentences.TF.IDF[, -c(494, 775, 1650)]
+
+tAndVSentences.TF.IDF = sampled.TF.IDF %>%
+  anti_join(trainingIDS.TF.IDF, by = "sentID")
+
+validationIDS.TF.IDF = tAndVSentences.TF.IDF %>%
+  group_by(presidentName) %>% 
+  slice_sample(prop = 0.7) %>% 
+  ungroup() %>%
+  select(sentID)
+
+validationSentences.TF.IDF = tAndVSentences.TF.IDF %>%
+  right_join(validationIDS.TF.IDF, by = "sentID") %>%
+  select(-sentID)
+
+validationSentences.TF.IDF = validationSentences.TF.IDF[, -c(494, 775, 1650)]
+
+testSentences.TF.IDF = tAndVSentences.TF.IDF %>%
+  anti_join(validationIDS.TF.IDF, by = "sentID") %>%
+  select(-sentID)
+
+testSentences.TF.IDF = testSentences.TF.IDF[, -c(494, 775, 1650)]
+
+save(speechSentences, bagWords, speechTDF,
+     sampledBOW, sampled.TF.IDF,
+     trainingSentencesBOW, trainingSentences.TF.IDF,
+     validationSentencesBOW, validationSentences.TF.IDF,
+     testSentencesBOW, testSentences.TF.IDF,
+     file = "SetSentenceData.RData")
+
+save(trainingSentencesBOW, trainingSentences.TF.IDF,
+     validationSentencesBOW, validationSentences.TF.IDF,
+     testSentencesBOW, testSentences.TF.IDF,
+     file = "dataForNN.RData")
+
+```
 
 ## Classification Algorithms
 
@@ -44,17 +339,19 @@ Random Forests are an extension of decision trees, and thus classification trees
 
 Feed Forward Neural Networks are one of the more complex predictive models used and implemented in this study. The classification feed forward neural networks take in a a data frame of predictors, pass them through a hidden layer or multiple hidden layers of nodes (each with their own weight), and outputs the probability of belonging to each class. Activation functions are applied to both the hidden layer and the output layer. The activation function applied to the hidden layers allow for more complex relationship identification by the network. The activation function applied to output layer ensures that the predictions are in the same form as the response. For classification problems, the output layer has the soft-max activation function applied to it. The classification network uses a cross entropy loss function to measure the performance of the network. It then uses an backpropagation to find the weights that most minimise the loss function.
 
-# Results.
+## Training, Validation and Testing
 
-```{r}
+Both the bag of words data frame and the TF-IDF data frame are split into training, validation and test data frames as follows:
 
-### Libraries
+-   70% of the observations are sampled for the training data frame.
+-   20% for the validation data frame. 
+-   10% for the test data frame.
 
-library(tidyverse)
-library(tidytext)
-library(tokenizers)
-library(gghighlight)
-library(tictoc)
+These data frames are created once, and used consistently through out the predictive modelling process to ensure evaluation consistency across classification algorithms. 
+
+# 3. Results.
+
+```{r echo=FALSE}
 
 ### Load Cleaned Data
 
@@ -62,12 +359,11 @@ load("SonaData.RData")
 
 ```
 
-
 ## Exploratory Data Analysis
 
-Before any predictive models are implemented, exploratory data analysis (EDA) is conducted on the speeches. The EDA highlights numerous interesting and substantial aspects of the speech data set. Below, Figure \@ref(fig:noOfWords) shows the number of words spoken by each president in each of the speeches. There are many fascinating features of each President's speeches that are identifiable. President Zuma uses fewer words in his SONA's in comparison to the other presidents. The address given by de Klerk pre elections in 1994 is the shortest speech, by a substantial margin. President Mbeki and President Ramaphosa have the most words in their speeches and follow a similar sentiment in their first SONA after replacing the previous president. Mbeki's first two speeches are comparable in length to Mandela's speeches. Equivalently, Ramaphosa's first address has a similar length to Zuma's speeches. The consistency of speech length to previous president's is seemingly an important and notable factor for speech writers when producing the first address for a newly elected president. 
+Before any predictive models are implemented, exploratory data analysis (EDA) is conducted on the speeches. The EDA highlights numerous interesting and substantial aspects of the speech data set. Below, @fig-noOfWords shows the number of words spoken by each president in each of the speeches. There are many fascinating features of each President's speeches that are identifiable. President Zuma uses fewer words in his SONA's in comparison to the other presidents. The address given by de Klerk, pre elections in 1994, is the shortest speech, by a substantial margin. President Mbeki and President Ramaphosa have the most words in their speeches and follow a similar sentiment in their first SONA after replacing the previous president. President Mbeki's first two speeches are comparable in length to President Mandela's speeches. Equivalently, President Ramaphosa's first address has a similar length to President Zuma's speeches. The consistency of speech length to previous president's is seemingly an important and notable factor for speech writers when producing the first address for a newly elected president.
 
-```{r noOfWords, fig.align='center', fig.height=9, fig.width=12, fig.cap="Number of Words said in each of the SONA's, colour coded by president.", echo=FALSE}
+```{r fig-noOfWords, fig.align='center', fig.height=6, fig.width=12, fig.cap="Number of Words used in each of the SONA's, colour coded by president.", echo=FALSE}
 
 ### Exploratory Data Analysis
 
@@ -80,7 +376,7 @@ edaPlotData = data.frame("Year" = sona$year,
                          "President" = sona$president_13)
 
 ggplot(edaPlotData, aes(x = Year, y = nWords, color = President, shape = President)) +
-  geom_point(size = 7) +
+  geom_point(size = 10) +
   xlab("Year") + ylab("Number of Words") +
   scale_x_discrete(name = "Year", 
                    breaks = c("1994","1999","2004", "2009", 
@@ -88,13 +384,105 @@ ggplot(edaPlotData, aes(x = Year, y = nWords, color = President, shape = Preside
   scale_y_continuous(name = "Number of Words", 
                      breaks = c(3000, 6000, 9000)) +
   scale_shape_manual(values = rep(18, 6)) +
-  theme_bw(base_size = 12)
+  theme_bw(base_size = 14)
 
 ```
 
-The most important feature highlighted is that the data frame only has one SONA for both de Klerk and President Motlanthe. The reason why it is notable is that the sentence data frame is imbalanced. The multi-year presidents have over 1500 sentences in the data frame. In contrast, de Klerk and President Motlanthe both have under 300 sentences. If the entire data frame is used as is, these presidents would be disproportionately represented. The classification algorithms are likely to struggle to capture the class structure of sentences and develop a bias towards the president with the majority of the observations in the data frame. 
+@fig-sentLengthTime below shows the average length of a sentence in each of the SONAs over the years. They are colour coded by the president who delivered the speech. The figure further highlights the stand out sentiments from above while introducing new concepts of interest. President Zuma had the shortest speeches by word count and these speeches were on average comprised of short sentences. In contrast, President Mbeki tended to have his speeches comprised of longer sentences. It is interesting to note the immense contrast in average sentence length between President Mbeki's first term as president (pre 2004) and his second term as president (post 2004). In his second term, his average sentence length increases by five words. Finally, the juxtaposition of the positioning of President Ramaphosa's speeches in the plots below and above is intriguing. President Ramaphosa's speech length rivals President Mbeki. However, the average length of the sentences used in his SONAs are closer to President Zuma. This is a purposeful decision in the speech writing process. Further, speech analysis and research is necessary to ascertain the likely reason for this decision. 
+
+```{r fig-sentLengthTime, fig.align='center', fig.height=6, fig.width=12, fig.cap="Average length of sentence in each of the SONA's, colour coded by president.", echo=FALSE}
+
+## Plot the Average Sentence Length over time
+
+avgSentenceLength = c()
+
+for (j in 1:36){
+  
+  sentWords = sapply(tokenize_sentences(sona$speech[j]), tokenize_words)
+  len = length(sentWords)
+  sentL = c()
+  
+  for (k in 1:len){
+    sentL[k] = sapply(sentWords[k], length)
+  }
+  
+  avgSentenceLength[j] = mean(sentL)
+}
+
+edaPlotData1 = data.frame("Year" = sona$year,
+                          "Length" = avgSentenceLength,
+                          "President" = sona$president_13)
+
+ggplot(edaPlotData1, aes(x = Year, y = Length, color = President, shape = President)) +
+  geom_point(size = 10) +
+  xlab("Year") + ylab("Average Sentence Length") +
+  scale_x_discrete(name = "Year", 
+                   breaks = c("1994","1999","2004", "2009", 
+                              "2014", "2019", "2023")) +
+  scale_y_continuous(breaks = c(20, 30, 40)) +
+  scale_shape_manual(values = rep(18, 6)) +
+  theme_bw(base_size = 14)
+
+```
+
+
+### Imbalanced Data
+
+The most important feature highlighted in the exploratory data analysis above is that the data frame only has one SONA for both de Klerk and President Motlanthe. The reason why it is notable is that the sentence data frame is imbalanced. The multi-year presidents have over 1500 sentences in the data frame. In contrast, de Klerk and President Motlanthe both have under 300 sentences. If the entire data frame is used as is, these presidents would be disproportionately represented. The classification algorithms are likely to struggle to capture the class structure of sentences and more likely to develop a bias towards the presidents with the majority of the observations in the data frame. There are numerous methods of dealing with the imbalanced data. Oversampling algorithms would increase the representation of the two aforementioned presidents in the data set. However, the sentence count discrepancy between de Klerk and President Motlanthe and the other presidents suggest that the oversampling algorithms would need to create or sample vastly more sentence observations than observations in the data frame for these two presidents. @mohammed2020machine highlights that the increase in the risk of overfitting the data is a severe limitation of oversampling algorithms. Therefore, de Klerk and President Motlanthe's observations are removed from both the Bag of Words data frame and the TF-IDF data frame. Additionally, to deal with the imbalanced class structure of the data set among the remaining four presidents, 1500 sentence observations are randomly sampled from each president's observations in both data frames. These 6000 observations are used to create the training, validation and testing data frames used in the predictive modelling process of the classification algorithms.
 
 ## Classification Trees
+
+```{r eval=FALSE, echo=FALSE}
+
+### Load Different Datasets
+
+load("SetSentenceData.RData")
+
+## Classification Tree
+
+tic()
+bowFit = rpart(presidentName ~., 
+               data = trainingSentencesBOW,
+               method = "class")
+toc()
+
+trainFittedBOW = predict(bowFit, type = 'class')
+trainPredBOW = table(trainingSentencesBOW$presidentName, trainFittedBOW)
+classErrorBOW.CT = (1 - round(sum(diag(trainPredBOW))/sum(trainPredBOW), 3))
+
+tic()
+tf.idf.Fit = rpart(presidentName ~., 
+                   data = trainingSentences.TF.IDF,
+                   method = "class")
+toc()
+
+trainFitted.TF.IDF = predict(tf.idf.Fit, type = 'class')
+trainPred.TF.IDF = table(trainingSentences.TF.IDF$presidentName, 
+                         trainFitted.TF.IDF)
+classError.TF.IDF.CT = (1 - round(sum(diag(trainPred.TF.IDF))/sum(trainPred.TF.IDF), 3))
+
+```
+
+A full classification tree is fit to both the bag of words training data frame and the TF-IDF training data frame. The misclassification rate for both of the two models on the training data is shown below in @tbl-ct. Both models perform poorly on their training data. The bag of words (BOW) model misclassified 72% of all the observations. The TF-IDF model misclassified 70% of the data frame's observations. 
+
+|        | Training Misclassification % |
+|:------:|:----------------------------:|
+|   BOW  |              72              |
+| TF-IDF |             70.2             |
+
+: Classification Trees Training Misclassification Rate {#tbl-ct}
+
+These models perform slightly better than a single president classification algorithm (attribute all sentences to one president) that would have a misclassification rate of 75%. @tbl-confCTBOW is a confusion matrix that highlights how the classification tree algorithm classifies observations in the BOW training data (columns) in comparison to the actual classification of the observations (rows). The table accentuates the largest issue the model (and the TF-IDF model) has. The majority of the sentences have been classified for President Ramaphosa. The model has then found multiple small splits in the feature space that has allowed it to identify a small subset of President Zuma and President Mbeki's observations. Additionally, the model does not classify any of the sentences for President Mandela. 
+
+
+|           | Mandela | Mbeki | Ramaphosa | Zuma |
+|:---------:|:-------:|:-----:|:---------:|:----:|
+|  Mandela  |    0    |   31  |    1019   |   0  |
+|   Mbeki   |    0    |   74  |    975    |   1  |
+| Ramaphosa |    0    |   1   |    1049   |   0  |
+|    Zuma   |    0    |   10  |    985    |  55  |
+
+: Confusion Matrix for BOW Training Data {#tbl-confCTBOW}
 
 ## Random Forests
 

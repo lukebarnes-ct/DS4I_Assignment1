@@ -15,3 +15,7 @@ format:
     theme: cosmo
     css: styles.css
     toc: true
+    crossref:
+      fig-title: '**Figure**'
+      fig-labels: arabic
+      title-delim: "**.**"

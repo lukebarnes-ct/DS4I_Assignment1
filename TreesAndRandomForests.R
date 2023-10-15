@@ -10,13 +10,13 @@ library(tictoc)
 library(ranger)
 library(caret)
 
+### Load Data for Plots and Tables (saved from previous run of models)
+
+load("T&RF.RData")
+
 ### Load Different Datasets
 
 load("SetSentenceData.RData")
-
-### Load Data for Plots and Tables
-
-load("T&RF.RData")
 
 ## Classification Tree
 
