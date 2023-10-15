@@ -3,13 +3,12 @@ project:
   output-dir: docs
 
 website:
-  title: "A Quarto Website"
+  title: "Predicting The President"
   navbar:
     left:
       - href: index.qmd
         text: Home
-      - addition.qmd
-      - multiplication.qmd
+      - common.qmd
 
 format:
   html:
