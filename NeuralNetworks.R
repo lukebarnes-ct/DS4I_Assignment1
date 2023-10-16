@@ -10,6 +10,10 @@ library(keras)
 library(reticulate)
 library(tensorflow)
 
+### Load Data for Plots and Tables (saved from previous run of models)
+
+load("FeedForwardNN_Data.RData")
+
 ### Load Different Datasets
 
 load("dataForNN.RData")
@@ -195,6 +199,27 @@ bestH = hiddenLayer[6]
 bestDP = dropOut[1]
 bestB = bSize[1]
 
+actFunc = c("relu", "selu", "tanh", "sigmoid")
+hiddenLayer = 32 * (2^seq(0, 5))
+dropOut = seq(0.1, 0.85, by = 0.15)
+bSize = 16 * (2^seq(0, 5))
+
+tuningPlotData.TF.IDF = data.frame("HL" = hiddenLayer,
+                                   "MisClass_Relu" = 1-reluArray[, 1, 1],
+                                   "MisClass_Selu" = 1-seluArray[, 1, 1],
+                                   "MisClass_Tanh" = 1-tanhArray[, 1, 1],
+                                   "MisClass_Sig" = 1-sigmArray[, 1, 1])
+
+ggplot(tuningPlotData.TF.IDF, aes(x = HL)) +
+  geom_line(aes(y = MisClass_Relu), linewidth = 2, linetype = 1, col = "black") +
+  geom_line(aes(y = MisClass_Selu), linewidth = 2, linetype = 1, col = "red") +
+  geom_line(aes(y = MisClass_Tanh), linewidth = 2, linetype = 1, col = "purple") +
+  geom_line(aes(y = MisClass_Sig), linewidth = 2, linetype = 1, col = "darkolivegreen") +
+  geom_vline(xintercept = 1024, 
+             linewidth = 1, linetype = 6, col = "blue") +
+  xlab("Number of Nodes on Hidden Layer") + ylab("Classification Error") +
+  theme_bw(base_size = 14)
+
 ## Bag-Of-Words Keras Tuning
 
 reluBOWArray = array(0, dim = c(length(hiddenLayer), 
@@ -223,6 +248,16 @@ bestBOWActF = actFunc[1]
 bestBOWH = hiddenLayer[3]
 bestBOWDP = dropOut[4]
 bestBOWB = bSize[6]
+
+tuningPlotData.BOW = data.frame("HL" = hiddenLayer[1:5],
+                                "MisClass_Relu" = 1-reluBOWArray[1:5, 4, 6])
+
+ggplot(tuningPlotData.BOW, aes(x = HL)) +
+  geom_line(aes(y = MisClass_Relu), linewidth = 2, linetype = 1, col = "black") +
+  geom_vline(xintercept = 128, 
+             linewidth = 1, linetype = 6, col = "blue") +
+  xlab("Number of Nodes on Hidden Layer") + ylab("Classification Error") +
+  theme_bw(base_size = 14)
 
 ##### Keras Function for Tuning Number of Layers
 
@@ -362,7 +397,6 @@ for (l in 1:length(layers)){
                                  XVal = presData.val.TF.IDF,
                                  YVal = presTarget.val.TF.IDF.OH)
   }
-
 
 # Creating Feed-Forward Neural Network Model
 

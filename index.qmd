@@ -339,17 +339,21 @@ Random Forests are an extension of decision trees, and thus classification trees
 
 Feed Forward Neural Networks are one of the more complex predictive models used and implemented in this study. The classification feed forward neural networks take in a a data frame of predictors, pass them through a hidden layer or multiple hidden layers of nodes (each with their own weight), and outputs the probability of belonging to each class. Activation functions are applied to both the hidden layer and the output layer. The activation function applied to the hidden layers allow for more complex relationship identification by the network. The activation function applied to output layer ensures that the predictions are in the same form as the response. For classification problems, the output layer has the soft-max activation function applied to it. The classification network uses a cross entropy loss function to measure the performance of the network. It then uses an backpropagation to find the weights that most minimise the loss function.
 
+#### Keras Data Pre-Processing
+
+To implement the Feed Forward Neural Network in R, using Keras, the data is required to undergo further pre-processing. The president class variable is transformed into an integer variable and one hot encoded. One hot encoding transforms the categorical single response column into multiple binary response columns, one for each president in the data frame. Additionally, the BOW data is scaled to make it compatible with Keras. 
+
 ## Training, Validation and Testing
 
 Both the bag of words data frame and the TF-IDF data frame are split into training, validation and test data frames as follows:
 
--   70% of the observations are sampled for the training data frame.
+-   70% of the observations from each president are sampled for the training data frame.
 -   20% for the validation data frame. 
 -   10% for the test data frame.
 
 These data frames are created once, and used consistently through out the predictive modelling process to ensure evaluation consistency across classification algorithms. 
 
-# 3. Results.
+# 3. Results and Discussion.
 
 ```{r echo=FALSE}
 
@@ -581,7 +585,7 @@ ggplot(valPlotData.TF.IDF, aes(x = Seq)) +
 
 ```
 
-### Random Forests with Optimal Parameters
+### Models with Optimal Parameters
 
 ```{r eval=FALSE, echo=FALSE}
 
@@ -628,7 +632,7 @@ The misclassification rate for both of the two models on the combined data sets 
 
 : Random Forest Misclassification Rate {#tbl-rf}
 
-@tbl-panel are confusion matrices that highlights how the random forest classification algorithm classifies observations in the data (columns) in comparison to the actual classification of the observations (rows) for both data sets. @tbl-rfBOW shows the classification contrast of the optimal BOW random forest model. Similarly, @tbl-rfTFIDF highlights the difference in classification for the optimal TF-IDF random forest model. Alike to the issues that arose for the BOW Classification Tree model, the BOW random forest model is biased towards a president. Over 50% of sentences in the BOW data frame are classified as coming from a speech by President Zuma. In contrast, the TF-IDF random forest model does not suffer from the same problem. The classification from its model on its data is far more evenly spread, which suggests that it is far more successful in identifying the underlying class structure. However, the misclassification rate in @tbl-rf highlights that the performance of these these models are incredibly similar. 
+@tbl-panel shows confusion matrices that highlight how the random forest classification algorithm classifies observations in the data (columns) in comparison to the actual classification of the observations (rows) for both data sets. @tbl-rfBOW shows the classification contrast of the optimal BOW random forest model. Similarly, @tbl-rfTFIDF highlights the difference in classification for the optimal TF-IDF random forest model. Alike to the issues that arose for the BOW Classification Tree model, the BOW random forest model is biased towards a president. Over 50% of sentences in the BOW data frame are classified as coming from a speech by President Zuma. In contrast, the TF-IDF random forest model does not suffer from the same problem. The classification from its model on its data is far more evenly spread, which suggests that it is far more successful in identifying the underlying class structure. However, the misclassification rate in @tbl-rf highlights that the performance of these these models are incredibly similar. 
 
 ::: {#tbl-panel layout-ncol=2}
 
@@ -657,10 +661,579 @@ Random Forest Confusion Matrices
 
 ## Feed Forward Neural Network
 
+```{r eval=FALSE, echo=FALSE}
+
+### Load Different Datasets
+
+load("dataForNN.RData")
+set.seed(2023)
+
+## Neural Networks
+
+# Pre-processing the Target Variable
+
+presTarget.train.BOW = as.integer(factor(trainingSentencesBOW$presidentName)) - 1
+presTarget.train.TF.IDF = as.integer(factor(trainingSentences.TF.IDF$presidentName)) - 1
+
+presTarget.val.BOW = as.integer(factor(validationSentencesBOW$presidentName)) - 1
+presTarget.val.TF.IDF = as.integer(factor(validationSentences.TF.IDF$presidentName)) - 1
+
+presTarget.test.BOW = as.integer(factor(testSentencesBOW$presidentName)) - 1
+presTarget.test.TF.IDF = as.integer(factor(testSentences.TF.IDF$presidentName)) - 1
+
+# Removing President Variable from Data sets and scale Bag-Of-Words Data
+
+presData.train.BOW = trainingSentencesBOW %>% 
+  select(-presidentName) %>% 
+  scale()
+
+presData.train.TF.IDF = trainingSentences.TF.IDF %>% 
+  select(-presidentName) %>%
+  as.matrix()
+
+presData.val.BOW = validationSentencesBOW %>% 
+  select(-presidentName) %>%
+  scale(center = attr(presData.train.BOW, "scaled:center"), 
+        scale = attr(presData.train.BOW, "scaled:scale"))
+
+presData.val.TF.IDF = validationSentences.TF.IDF %>% 
+  select(-presidentName) %>%
+  as.matrix()
+
+presData.test.BOW = testSentencesBOW %>% 
+  select(-presidentName) %>%
+  scale(center = attr(presData.train.BOW, "scaled:center"), 
+        scale = attr(presData.train.BOW, "scaled:scale"))
+
+presData.test.TF.IDF = testSentences.TF.IDF %>% 
+  select(-presidentName) %>%
+  as.matrix()
+
+# Remove columns with NAs
+
+presData.train.BOW.NEW = presData.train.BOW %>%
+  replace(is.na(.), 0)
+
+presData.val.BOW = presData.val.BOW %>%
+  replace(is.na(.), 0)
+
+presData.test.BOW = presData.test.BOW %>%
+  replace(is.na(.), 0)
+  
+# One-Hot Encoding President Name variable
+
+presTarget.train.BOW.OH = to_categorical(presTarget.train.BOW)
+presTarget.train.TF.IDF.OH = to_categorical(presTarget.train.TF.IDF)
+
+presTarget.val.BOW.OH = to_categorical(presTarget.val.BOW)
+presTarget.val.TF.IDF.OH = to_categorical(presTarget.val.TF.IDF)
+
+presTarget.test.BOW.OH = to_categorical(presTarget.test.BOW)
+presTarget.test.TF.IDF.OH = to_categorical(presTarget.test.TF.IDF)
+
+## Imp Variables
+
+dimensions = dim(presData.train.BOW.NEW)
+presNum = dim(presTarget.train.BOW.OH)[2]
+
+```
+
 ### Hyperparameter Tuning
 
-# Discussion.
+Hyperparameter Tuning is a crucial facet of the neural network modelling process. In comparison to the random forests, where the only hyperparameter optimised for the models was the number of trees, these feed forward neural networks require the optimisation of multiple parameters to find the model that best classifies the speech sentences to the president. The hyperparameters optimised for the purpose of the neural networks in this study are the hidden layer activation functions, the number of nodes on the hidden layer, the dropout rate, the batch size and the number of hidden layers.  
 
-# Conclusion.
+#### Activation Functions, Nodes, Dropout and Batch Size
+
+Both the BOW and the TF-IDF training and validation data sets were used to choose the optimal number of hidden layer nodes, the optimal dropout rate and the optimal batch size for each of their respective feed forward neural network models. The optimal hidden layer activation function is found for the TF-IDF data and used for both of the models. The hyperparameters and the considered values are shown below in @tbl-hypTune. 
+
+| Activation |  Nodes  | Dropout % | Batch Size |
+|:----------:|:-------:|:---------:|:----------:|
+|  ReLu      |   32    |    10     |     16     |
+|  SeLu      |   64    |    25     |     32     |
+|  TanH      |   128   |    40     |     64     |
+|  Sigmoid   |   256   |    55     |    128     |
+|     -      |   512   |    70     |    256     |
+|     -      |   1024  |    85     |    512     |
+
+: Considered Values for Hyperparameters {#tbl-hypTune}
+
+The validation misclassification rate of TF-IDF feed forward neural networks for
+all 864 combinations of these hyperparameters are found. @fig-tfidfNNTune shows the performance of a subset of these TF-IDF neural networks as the number of nodes on the hidden layer increase from 32 to 1024. The batch size and the dropout % are fixed at their optimally found values of 16 and 10%. The feed forward neural networks using the Rectified Linear Unit (ReLu) activation function on the single hidden layer are the only group of networks that improve in performance as the number of nodes on the hidden layer increase. All of the neural networks with the other activation functions perform better in terms of classification with a smaller number of nodes on the hidden layer. Additionally, the discrepancy in the minimum validation misclassification rate between the ReLu activation function and the other activation functions is noticeable. The optimal activation function to use on the hidden layer is thus the ReLu activation function. 1024 nodes is the optimal number for the hidden layer of the TF-IDF feed forward neural network model. 
+
+```{r eval=FALSE, echo=FALSE}
+
+## Model Tuning
+
+##### Keras Function for Tuning Parameters
+
+actFunc = c("relu", "selu", "tanh", "sigmoid")
+hiddenLayer = 32 * (2^seq(0, 5))
+dropOut = seq(0.1, 0.85, by = 0.15)
+bSize = 16 * (2^seq(0, 5))
+
+kerasHPTuning = function(actF, hidLayer, dpRate, b, X, Y, XVal, YVal){
+  
+  dim = dim(X)
+  nn = keras_model_sequential()
+  
+  nn %>% 
+    layer_dense(units = hidLayer, 
+                activation = actF, 
+                input_shape = dim[2]) %>%
+    layer_dropout(rate = dpRate) %>%
+    layer_dense(units = presNum, activation = "softmax")
+  
+  summary(nn)
+  
+  nn %>% compile(
+    loss = "categorical_crossentropy",
+    optimizer = optimizer_rmsprop(learning_rate = 0.01),
+    metrics = c('accuracy'),
+  )
+  
+  nn.History = nn %>% fit(
+    X, Y, 
+    epochs = 10, batch_size = b,
+    validation_data = list(XVal, YVal),
+    verbose = 1, shuffle = TRUE
+  )
+  
+  return(nn.History$metrics$val_accuracy[10])
+}
+
+reluArray = array(0, dim = c(length(hiddenLayer), 
+                             length(dropOut),
+                             length(bSize)))
+
+seluArray = array(0, dim = c(length(hiddenLayer), 
+                             length(dropOut),
+                             length(bSize)))
+
+tanhArray = array(0, dim = c(length(hiddenLayer), 
+                             length(dropOut),
+                             length(bSize)))
+
+sigmArray = array(0, dim = c(length(hiddenLayer), 
+                             length(dropOut),
+                             length(bSize)))
+
+for (i in 1:length(hiddenLayer)){
+  
+  for (j in 1:length(dropOut)){
+    
+    for (k in 1:length(bSize)){
+      
+      reluArray[i, j, k] =  kerasHPTuning(actFunc[1],
+                                          hiddenLayer[i],
+                                          dropOut[j],
+                                          bSize[k],
+                                          X = presData.train.TF.IDF,
+                                          Y = presTarget.train.TF.IDF.OH,
+                                          XVal = presData.val.TF.IDF,
+                                          YVal = presTarget.val.TF.IDF.OH)
+      
+      seluArray[i, j, k] = kerasHPTuning(actFunc[2],
+                                         hiddenLayer[i],
+                                         dropOut[j],
+                                         bSize[k],
+                                         X = presData.train.TF.IDF,
+                                         Y = presTarget.train.TF.IDF.OH,
+                                         XVal = presData.val.TF.IDF,
+                                         YVal = presTarget.val.TF.IDF.OH)
+      
+      tanhArray[i, j, k] = kerasHPTuning(actFunc[3],
+                                         hiddenLayer[i],
+                                         dropOut[j],
+                                         bSize[k],
+                                         X = presData.train.TF.IDF,
+                                         Y = presTarget.train.TF.IDF.OH,
+                                         XVal = presData.val.TF.IDF,
+                                         YVal = presTarget.val.TF.IDF.OH)
+      
+      sigmArray[i, j, k] = kerasHPTuning(actFunc[4],
+                                         hiddenLayer[i],
+                                         dropOut[j],
+                                         bSize[k],
+                                         X = presData.train.TF.IDF,
+                                         Y = presTarget.train.TF.IDF.OH,
+                                         XVal = presData.val.TF.IDF,
+                                         YVal = presTarget.val.TF.IDF.OH)
+    }
+  }
+}
+
+maxValues = c(max(reluArray),
+              max(seluArray),
+              max(tanhArray),
+              max(sigmArray))
+
+which.max(reluArray)
+
+bestActF = actFunc[which.max(maxValues)]
+bestH = hiddenLayer[6]
+bestDP = dropOut[1]
+bestB = bSize[1]
+
+## Bag-Of-Words Keras Tuning
+
+reluBOWArray = array(0, dim = c(length(hiddenLayer), 
+                                length(dropOut),
+                                length(bSize)))
+
+for (i in 1:length(hiddenLayer)){
+  
+  for (j in 1:length(dropOut)){
+    
+    for (k in 1:length(bSize)){
+      
+      reluBOWArray[i, j, k] =  kerasHPTuning(actFunc[1],
+                                             hiddenLayer[i],
+                                             dropOut[j],
+                                             bSize[k],
+                                             X = presData.train.BOW.NEW,
+                                             Y = presTarget.train.BOW.OH,
+                                             XVal = presData.val.BOW,
+                                             YVal = presTarget.val.BOW.OH)
+    }
+  }
+}
+
+bestBOWActF = actFunc[1]
+bestBOWH = hiddenLayer[3]
+bestBOWDP = dropOut[4]
+bestBOWB = bSize[6]
+
+```
+
+```{r fig-tfidfNNTune, fig.align='center', fig.height=6, fig.width=12, fig.cap="Validation Misclassification Rate for TF-IDF neural networks with various hidden layer activation functions for an increasing number of nodes on the hidden layer (batch size = 16 and dropout = 10%). The activation functions used are: Relu (black), Selu (red), Tanh (purple) and Sigmoid (green). The blue dotted line indicates the optimal number of nodes on a single hidden layer network.", echo=FALSE}
+
+### Load Data for Plots and Tables (saved from previous run of models)
+
+load("FeedForwardNN_Data.RData")
+
+actFunc = c("relu", "selu", "tanh", "sigmoid")
+hiddenLayer = 32 * (2^seq(0, 5))
+dropOut = seq(0.1, 0.85, by = 0.15)
+bSize = 16 * (2^seq(0, 5))
+
+tuningPlotData.TF.IDF = data.frame("HL" = hiddenLayer,
+                                   "MisClass_Relu" = 1-reluArray[, 1, 1],
+                                   "MisClass_Selu" = 1-seluArray[, 1, 1],
+                                   "MisClass_Tanh" = 1-tanhArray[, 1, 1],
+                                   "MisClass_Sig" = 1-sigmArray[, 1, 1])
+
+ggplot(tuningPlotData.TF.IDF, aes(x = HL)) +
+  geom_line(aes(y = MisClass_Relu), linewidth = 3, linetype = 1, col = "black") +
+  geom_line(aes(y = MisClass_Selu), linewidth = 3, linetype = 1, col = "red") +
+  geom_line(aes(y = MisClass_Tanh), linewidth = 3, linetype = 1, col = "purple") +
+  geom_line(aes(y = MisClass_Sig), linewidth = 3, linetype = 1, col = "green") +
+  geom_vline(xintercept = 1024, 
+             linewidth = 1, linetype = 6, col = "blue") +
+  xlab("Number of Nodes on Hidden Layer") + ylab("Classification Error") +
+  theme_bw(base_size = 14)
+
+```
+
+The ReLu activation function is the only activation considered in the tuning process of the hyperparameters for the BOW Feed Forward Neural Network. @fig-BOWNNTune shows the validation misclassification rate, as the number of nodes on the hidden layer increase, for a subset of the neural networks with the optimally chosen batch size fixed at 512 and the dropout rate fixed at the optimal 55%. The optimal number of nodes to have on the hidden layer, according to the BOW validation data, is 128. 
+
+```{r fig-BOWNNTune, fig.align='center', fig.height=6, fig.width=12, fig.cap="Validation Misclassification Rate for BOW neural networks with the ReLu hidden layer activation function for an increasing number of nodes on the hidden layer (batch size = 512 and dropout = 55%). The blue dotted line indicates the optimal number of nodes on a single hidden layer network.", echo=FALSE}
+
+tuningPlotData.BOW = data.frame("HL" = hiddenLayer[1:5],
+                                "MisClass_Relu" = 1-reluBOWArray[1:5, 4, 6])
+
+ggplot(tuningPlotData.BOW, aes(x = HL)) +
+  geom_line(aes(y = MisClass_Relu), linewidth = 2, linetype = 1, col = "black") +
+  geom_vline(xintercept = 128, 
+             linewidth = 1, linetype = 6, col = "blue") +
+  xlab("Number of Nodes on Hidden Layer") + ylab("Classification Error") +
+  theme_bw(base_size = 14)
+
+```
+
+
+#### Number of Hidden Layers
+
+```{r eval=FALSE, echo=FALSE}
+
+##### Keras Function for Tuning Number of Layers
+
+kerasLayerTuning = function(nLayer, X, Y, XVal, YVal){
+  
+  dim = dim(X)
+  nn = keras_model_sequential()
+  
+  if (nLayer == 1){
+    
+    nn %>% 
+      layer_dense(units = bestH, 
+                  activation = bestActF, 
+                  input_shape = dim[2]) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = presNum, activation = "softmax")
+    
+    summary(nn)
+    
+    nn %>% compile(
+      loss = "categorical_crossentropy",
+      optimizer = optimizer_rmsprop(learning_rate = 0.01),
+      metrics = c('accuracy'),
+    )
+    
+    nn.History = nn %>% fit(
+      X, Y, 
+      epochs = 10, batch_size = bestB,
+      validation_data = list(XVal, YVal),
+      verbose = 1, shuffle = TRUE
+    )
+  }
+  
+  if (nLayer == 2){
+    
+    nn %>% 
+      layer_dense(units = bestH, 
+                  activation = bestActF, 
+                  input_shape = dim[2]) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = bestH/2, 
+                  activation = bestActF) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = presNum, activation = "softmax")
+    
+    summary(nn)
+    
+    nn %>% compile(
+      loss = "categorical_crossentropy",
+      optimizer = optimizer_rmsprop(learning_rate = 0.01),
+      metrics = c('accuracy'),
+    )
+    
+    nn.History = nn %>% fit(
+      X, Y, 
+      epochs = 10, batch_size = bestB,
+      validation_data = list(XVal, YVal),
+      verbose = 1, shuffle = TRUE
+    )
+  }
+  
+  if (nLayer == 3){
+    
+    nn %>% 
+      layer_dense(units = bestH, 
+                  activation = bestActF, 
+                  input_shape = dim[2]) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = bestH/2, 
+                  activation = bestActF) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = bestH/4, 
+                  activation = bestActF) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = presNum, activation = "softmax")
+    
+    summary(nn)
+    
+    nn %>% compile(
+      loss = "categorical_crossentropy",
+      optimizer = optimizer_rmsprop(learning_rate = 0.01),
+      metrics = c('accuracy'),
+    )
+    
+    nn.History = nn %>% fit(
+      X, Y, 
+      epochs = 10, batch_size = bestB,
+      validation_data = list(XVal, YVal),
+      verbose = 1, shuffle = TRUE
+    )
+  }
+  
+  if (nLayer == 4){
+    
+    nn %>% 
+      layer_dense(units = bestH, 
+                  activation = bestActF, 
+                  input_shape = dim[2]) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = bestH/2, 
+                  activation = bestActF) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = bestH/4, 
+                  activation = bestActF) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = bestH/8, 
+                  activation = bestActF) %>%
+      layer_dropout(rate = bestDP) %>%
+      layer_dense(units = presNum, activation = "softmax")
+    
+    summary(nn)
+    
+    nn %>% compile(
+      loss = "categorical_crossentropy",
+      optimizer = optimizer_rmsprop(learning_rate = 0.01),
+      metrics = c('accuracy'),
+    )
+    
+    nn.History = nn %>% fit(
+      X, Y, 
+      epochs = 10, batch_size = bestB,
+      validation_data = list(XVal, YVal),
+      verbose = 1, shuffle = TRUE
+    )
+  }
+  
+  return(mean(nn.History$metrics$val_accuracy[5:10]))
+}
+
+layers = 1:4
+layError = c()
+for (l in 1:length(layers)){
+  
+  layError[l] = kerasLayerTuning(layers[l],
+                                 X = presData.train.TF.IDF,
+                                 Y = presTarget.train.TF.IDF.OH,
+                                 XVal = presData.val.TF.IDF,
+                                 YVal = presTarget.val.TF.IDF.OH)
+  }
+
+```
+
+The other hyperparameter considered for tuning in the study's neural network modelling process is the number of hidden layers. The optimal number of hidden layers is found using the TF-IDF training and validation data. The optimal hyperparameters found previously for the TF-IDF feed forward neural networks are used in these models. The only caveat is that the number of nodes on each additional hidden layer is half of the hidden layer before it. @tbl-hidLay shows the performance of the neural network model as the number of hidden layers in the model increase. The table suggests that additional hidden layers, decrease the model's identify the class structure within the data. 
+
+|     Hidden Layers     |     1     |     2     |     3      |    4       |
+|:---------------------:|:---------:|:---------:|:----------:|:----------:|
+|  Misclassification %  |   42.9    |    43.9   |   44.9     |     44.7   |
+
+
+: Validation Misclassification % as hidden layers are added {#tbl-hidLay}
+
+### Models with Optimal Parameters
+
+```{r eval=FALSE, echo=FALSE}
+
+# Creating Feed-Forward Neural Network Model
+
+## Bag-Of-Words
+
+bowFit.FF.NN = keras_model_sequential()
+
+bowFit.FF.NN %>% 
+  layer_dense(units = bestBOWH, 
+              activation = bestBOWActF, 
+              input_shape = dimensions[2]) %>%
+  layer_dropout(rate = bestBOWDP) %>%
+  layer_dense(units = presNum, activation = "softmax")
+
+summary(bowFit.FF.NN)
+
+bowFit.FF.NN %>% compile(
+  loss = "categorical_crossentropy",
+  optimizer = optimizer_rmsprop(learning_rate = 0.01),
+  metrics = c('accuracy'),
+)
+
+bowFit.FF.NN.History = bowFit.FF.NN %>% fit(
+  presData.train.BOW.NEW, presTarget.train.BOW.OH, 
+  epochs = 40, batch_size = bestBOWB,
+  validation_data = list(presData.val.BOW, presTarget.val.BOW.OH),
+  verbose = 1, shuffle = TRUE
+)
+
+plot(bowFit.FF.NN.History)
+
+## TF-IDF
+
+dimensions.tf.idf = dim(presData.train.TF.IDF)
+
+tf.idf.Fit.FF.NN = keras_model_sequential()
+
+tf.idf.Fit.FF.NN %>% 
+  layer_dense(units = bestH, 
+              activation = bestActF, 
+              input_shape = dimensions.tf.idf[2]) %>%
+  layer_dropout(rate = bestBOWDP) %>%
+  layer_dense(units = presNum, activation = "softmax")
+
+summary(tf.idf.Fit.FF.NN)
+
+tf.idf.Fit.FF.NN %>% compile(
+  loss = "categorical_crossentropy",
+  optimizer = optimizer_rmsprop(learning_rate = 0.01),
+  metrics = c('accuracy'),
+)
+
+tf.idf.Fit.FF.NN.History = tf.idf.Fit.FF.NN %>% fit(
+  presData.train.TF.IDF, presTarget.train.TF.IDF.OH, 
+  epochs = 20, batch_size = bestB,
+  validation_data = list(presData.val.TF.IDF, presTarget.val.TF.IDF.OH),
+  verbose = 1, shuffle = TRUE
+)
+
+plot(tf.idf.Fit.FF.NN.History)
+
+```
+
+
+The optimal hyperparameters used to train and fit the two feed forward neural networks, in addition to the validation misclassification rate of the models, are shown in @tbl-optHypNN. The drastic difference between the performance of the optimal feed forward neural network on the BOW and the TF-IDF data is sizable. The BOW neural network classifies close to 55% of the sentences incorrectly. In contrast, the TF-IDF neural network only misclassifies close to 40% of the sentences in the TF-IDF validation data frame. 
+
+|           | Activation |  Nodes  | Dropout % | Batch Size | Hidden Layers | Misclass % |
+|:---------:|:----------:|:-------:|:---------:|:----------:|:-------------:|:----------:|
+|   BOW     |  ReLu      |   128   |    55     |     512    |       1       |    54.4    |
+|   TF-IDF  |  ReLu      |   1024  |    10     |     16     |       1       |    42.3    |
+
+: Optimal Hyperparameters and Model Performance {#tbl-optHypNN}
+
+## Test Performance
+
+```{r eval=FALSE, echo=FALSE}
+
+bow.Test.CT.ClassError
+bow.Test.RF.ClassError
+bowFit.FF.NN.ClassError
+
+tf.idf.Test.CT.ClassError
+tf.idf.Test.RF.ClassError
+tf.idf.Fit.FF.NN.ClassError
+```
+
+Each of the classification model's considered in this study have their predictive capabilities tested with the respective test data sets. The misclassification rates for the BOW models are calculated on the BOW test data. Similarly, the performance of the TF-IDF models is calculated on the TF-IDF test data. @tbl-testPerf shows the test misclassification rates for all six of the classification models, ranked overall from best to worst. The TF-IDF neural network is the best classifier produced in this study. It accurately misclassifies 40% of the sentences in the test data to the president who used them in a SONA. Conversely, the BOW Classification Tree is the worst performing model. It incorrectly classifies over 71% of test sentences. 
+
+|                               |  Test Misclassification %    |
+|:-----------------------------:|:----------------------------:|
+|  Neural Network (TF-IDF)      |             40.0             |
+|  Random Forest (TF-IDF)       |             47.4             |
+|  Random Forest (BOW)          |             47.8             |
+|  Neural Network (BOW)         |             54.4             |
+|  Classificiation Tree (TF-IDF)|             70.2             |
+|  Classificiation Tree (BOW)   |             71.7             |
+
+: Performance of Models on Test Data {#tbl-testPerf}
+
+The most interesting feature of the table is that the BOW random forest outperforms the BOW neural network in classifying sentences to presidents by over 6%. @tbl-panelTest shows the confusion matrices comparing the predicted president classification (columns) to the actual president classification (rows) for the test data for both models. @tbl-nnBOWTest highlights that the BOW neural network is seemingly classifying close to 50% of the test sentences as from President Mandela. This is similar to the issues experienced by both the BOW classification tree model and the BOW random forest model. Each of these BOW models exhibit a strong bias towards a president. Even though it is not as pronounced in @tbl-rfBOWTest, the BOW random forest model's bias towards classifying sentences for President Zuma is clear. These results suggest that all of the BOW models are struggling to identify the true class structure in the BOW sentence data. The consistency of the problem propose that the issue is with the construction of the BOW data frame with the count frequencies and not the models themselves. 
+
+::: {#tbl-panelTest layout-ncol=2}
+
+|           | Mandela | Mbeki | Ramaphosa | Zuma |
+|:---------:|:-------:|:-----:|:---------:|:----:|
+|  Mandela  |    52   |   29  |     8     |  46  |
+|   Mbeki   |    18   |   69  |     9     |  39  |
+| Ramaphosa |    11   |   18  |     68    |  38  |
+|    Zuma   |    6    |   13  |     23    |  93  |
+
+
+: Random Forest {#tbl-rfBOWTest}
+
+|           | Mandela | Mbeki | Ramaphosa | Zuma |
+|:---------:|:-------:|:-----:|:---------:|:----:|
+|  Mandela  |   103   |   19  |     6     |   7  |
+|   Mbeki   |    68   |   43  |     7     |  17  |
+| Ramaphosa |    57   |   11  |     56    |  11  |
+|    Zuma   |    59   |   14  |     18    |  44  |
+
+
+: Neural Network {#tbl-nnBOWTest}
+
+BOW Test Confusion Matrices
+:::
+
+# 4. Conclusion.
 
 # References.
