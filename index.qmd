@@ -486,6 +486,175 @@ These models perform slightly better than a single president classification algo
 
 ## Random Forests
 
+```{r eval=FALSE, echo=FALSE}
+
+## Random Forests (using Ranger)
+
+trainingSentencesBOW$presidentName = factor(trainingSentencesBOW$presidentName)
+trainingSentences.TF.IDF$presidentName = factor(trainingSentences.TF.IDF$presidentName)
+
+#### Validation Analysis with Ranger
+#### Bag-Of-Words
+
+errorBOW = c()
+valErrBOW = c()
+for(i in 1:length(seq)){
+  tic()
+  mod = ranger(presidentName ~ ., 
+               data = trainingSentencesBOW,
+               num.trees = seq[i], 
+               mtry = 20)
+  errorBOW[i] = mod$prediction.error
+  valModPredsBOW = predict(mod, validationSentencesBOW)$predictions
+  valModPredsBOW.Ranger = table(validationSentencesBOW$presidentName, 
+                                valModPredsBOW)
+  valErrBOW[i] = (1 - round(sum(diag(valModPredsBOW.Ranger))/sum(valModPredsBOW.Ranger), 3))
+  print(paste0("Iteration: ", i))
+  toc()
+}
+
+valPlotDataBOW = data.frame("Seq" = seq,
+                            "Error" = errorBOW,
+                            "ValError" = valErrBOW)
+
+minTreesBOW = seq[which.min(valErrBOW)]
+
+#### Validation Analysis with Ranger
+#### tf-IDF
+
+error = c()
+valErr = c()
+seq = seq(100, 3000, by = 100)
+for(i in 1:length(seq)){
+  tic()
+  mod = ranger(presidentName ~ ., 
+               data = trainingSentences.TF.IDF,
+               num.trees = seq[i], 
+               mtry = 20)
+  error[i] = mod$prediction.error
+  valModPreds = predict(mod, validationSentences.TF.IDF)$predictions
+  valModPreds.Ranger = table(validationSentences.TF.IDF$presidentName, valModPreds)
+  valErr[i] = (1 - round(sum(diag(valModPreds.Ranger))/sum(valModPreds.Ranger), 3))
+  print(paste0("Iteration: ", i))
+  toc()
+}
+
+valPlotData.TF.IDF = data.frame("Seq" = seq,
+                                "Error" = error,
+                                "ValError" = valErr)
+
+minTrees.TF.IDF.RF = seq[which.min(valErr)]
+
+```
+
+### Validation Analysis
+
+The classification random forest modelling process requires validation analysis to choose the optimal set of parameters that will minimise the misclassification rate for the final model on the data. In this study, the optimal number of trees in each random forest is crucial to the model's classification performance. @fig-BOWValRF shows the misclassification rate for random forest models on both the training and validation BOW data as the number of trees in the model increase from 100 trees to 3000 trees. The significant overlap between the rates for both the training data and the validation data suggests that the model is struggling to capture the class structure in the data and has not settled. The two main reasons for this issue are that the random forest model is ill-suited to deal with the data frame as is or a greater number of trees need to be considered in the BOW random forest model. Nonetheless, the random forest model with 2500 trees produces the lowest validation misclassification rate for the BOW data. Similarly, @fig-tfidfValRF shows the misclassification rate for random forest models on both the training and validation TF-IDF data for increasing numbers of trees. The difference in error between the training data and the validation data is more pronounced here, in contrast to the BOW random forest models. The TF-IDF random forest model with 1300 trees, misclassifies the least amount of sentences in the validation data. 
+
+```{r fig-BOWValRF, fig.align='center', fig.height=6, fig.width=12, fig.cap="Misclassification Rate on training (black) and validation (red) BOW data for increasing number of trees in random forest. The blue dotted line indicates the random forest model that misclassified the smallest number of sentences in the validation data.", echo=FALSE}
+
+### Load Data for Plots and Tables (saved from previous run of models)
+
+load("T&RF.RData")
+
+ggplot(valPlotDataBOW, aes(x = Seq)) +
+  geom_line(aes(y = Error), linewidth = 3, linetype = 1, col = "black") +
+  geom_line(aes(y = ValError), linewidth = 3, linetype = 1, col = "red") +
+  geom_vline(xintercept = minTreesBOW, 
+             linewidth = 1, linetype = 6, col = "blue") +
+  xlab("Number of Trees") + ylab("Classification Error") +
+  theme_bw(base_size = 14)
+
+```
+
+
+
+```{r fig-tfidfValRF, fig.align='center', fig.height=6, fig.width=12, fig.cap="Misclassification Rate on training (black) and validation (red) TF-IDF data for increasing number of trees in random forest. The blue dotted line indicates the random forest model that misclassified the smallest number of sentences in the validation data.", echo=FALSE}
+
+ggplot(valPlotData.TF.IDF, aes(x = Seq)) +
+  geom_line(aes(y = Error), linewidth = 3, linetype = 1, col = "black") +
+  geom_line(aes(y = ValError), linewidth = 3, linetype = 1, col = "red") +
+  geom_vline(xintercept = minTrees.TF.IDF.RF, 
+             linewidth = 1, linetype = 6, col = "blue") +
+  xlab("Number of Trees") + ylab("Classification Error") +
+  theme_bw(base_size = 14)
+
+```
+
+### Random Forests with Optimal Parameters
+
+```{r eval=FALSE, echo=FALSE}
+
+#### Fit RF with Best Parameters on Training and Val Sets together
+
+tAndVSentencesBOW = as.data.frame(rbind(trainingSentencesBOW, 
+                                        validationSentencesBOW))
+tic()
+bowFit.Ranger = ranger(presidentName ~ ., 
+                       data = tAndVSentencesBOW,
+                       mtry = 20,
+                       num.trees = minTreesBOW)
+toc()
+
+trainFittedBOW.Ranger = bowFit.Ranger$predictions
+trainPredBOW.Ranger = table(tAndVSentencesBOW$presidentName, 
+                            trainFittedBOW.Ranger)
+classErrorBOW.RF = round(bowFit.Ranger$prediction.error, 3)
+
+tAndVSentences.TF.IDF = as.data.frame(rbind(trainingSentences.TF.IDF, 
+                                            validationSentences.TF.IDF))
+tic()
+tf.idf.Fit.Ranger = ranger(presidentName ~ ., 
+                           data = tAndVSentences.TF.IDF,
+                           mtry = 20,
+                           num.trees = minTrees.TF.IDF.RF)
+toc()
+
+trainFitted.TF.IDF.Ranger = tf.idf.Fit.Ranger$predictions
+trainPred.TF.IDF.Ranger = table(tAndVSentences.TF.IDF$presidentName, trainFitted.TF.IDF.Ranger)
+classError.TF.IDF.RF = round(tf.idf.Fit.Ranger$prediction.error, 3)
+
+```
+
+
+The optimal number of trees for the models of both data sets, found using validation analysis, are used to fit two random forest models on the combined training and validation data. 
+
+The misclassification rate for both of the two models on the combined data sets is shown below in @tbl-rf. The random forest models improve on the misclassification rate, in contrast to the classification trees. These models misclassify under 50% of the sentences in their specified data sets. The bag of words (BOW) random forest model misclassified 49.7% of the observations. The TF-IDF random forest model misclassified 48.8% of the data frame's observations. 
+
+|        | Model Misclassification % |
+|:------:|:----------------------------:|
+|   BOW  |             49.7             |
+| TF-IDF |             48.8             |
+
+: Random Forest Misclassification Rate {#tbl-rf}
+
+@tbl-panel are confusion matrices that highlights how the random forest classification algorithm classifies observations in the data (columns) in comparison to the actual classification of the observations (rows) for both data sets. @tbl-rfBOW shows the classification contrast of the optimal BOW random forest model. Similarly, @tbl-rfTFIDF highlights the difference in classification for the optimal TF-IDF random forest model. Alike to the issues that arose for the BOW Classification Tree model, the BOW random forest model is biased towards a president. Over 50% of sentences in the BOW data frame are classified as coming from a speech by President Zuma. In contrast, the TF-IDF random forest model does not suffer from the same problem. The classification from its model on its data is far more evenly spread, which suggests that it is far more successful in identifying the underlying class structure. However, the misclassification rate in @tbl-rf highlights that the performance of these these models are incredibly similar. 
+
+::: {#tbl-panel layout-ncol=2}
+
+|           | Mandela | Mbeki | Ramaphosa | Zuma |
+|:---------:|:-------:|:-----:|:---------:|:----:|
+|  Mandela  |   467   |  312  |     99    |  487 |
+|   Mbeki   |   192   |  636  |    103    |  434 |
+| Ramaphosa |    91   |  132  |    640    |  502 |
+|    Zuma   |    69   |  138  |    154    | 1004 |
+
+
+: Bag Of Words {#tbl-rfBOW}
+
+|           | Mandela | Mbeki | Ramaphosa | Zuma |
+|:---------:|:-------:|:-----:|:---------:|:----:|
+|  Mandela  |   582   |  382  |     87    |  314 |
+|   Mbeki   |   238   |  720  |    113    |  294 |
+| Ramaphosa |   114   |  205  |    712    |  334 |
+|    Zuma   |   150   |  220  |    215    |  780 |
+
+
+: TF-IDF {#tbl-rfTFIDF}
+
+Random Forest Confusion Matrices
+:::
+
 ## Feed Forward Neural Network
 
 ### Hyperparameter Tuning
