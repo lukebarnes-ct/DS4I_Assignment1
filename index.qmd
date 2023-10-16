@@ -1,7 +1,10 @@
 ---
-title: "Predicting the President: An exploration and comparison of classification algorithms."
+title: "Predicting the President: An Exploration and Comparison of Classification algorithms."
+
+author: Luke Barnes
 
 bibliography: references.bib
+nocite: '@*'
 ---
 
 # 1. Introduction.

@@ -6,8 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Luke Barnes">
 
-<title>A Quarto Website - Welcome!</title>
+<title>Predicting The President - Predicting the President: An Exploration and Comparison of Classification algorithms.</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,7 +21,26 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -71,7 +91,7 @@ ul.task-list li input[type="checkbox"] {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">A Quarto Website</span>
+    <span class="navbar-title">Predicting The President</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -82,15 +102,11 @@ ul.task-list li input[type="checkbox"] {
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
     <a class="nav-link active" href="./index.html" rel="" target="" aria-current="page">
- <span class="menu-text">Home</span></a>
+ <span class="menu-text">Scientific Paper</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./addition.html" rel="" target="">
- <span class="menu-text">Adding numbers in R</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./multiplication.html" rel="" target="">
- <span class="menu-text">Multiplying numbers in R</span></a>
+    <a class="nav-link" href="./common.html" rel="" target="">
+ <span class="menu-text">Most Commonly Used Words</span></a>
   </li>  
 </ul>
             <div class="quarto-navbar-tools ms-auto">
@@ -104,20 +120,69 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction." id="toc-introduction." class="nav-link active" data-scroll-target="#introduction.">1. Introduction.</a></li>
+  <li><a href="#methodology." id="toc-methodology." class="nav-link" data-scroll-target="#methodology.">2. Methodology.</a>
+  <ul class="collapse">
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a>
+  <ul class="collapse">
+  <li><a href="#data-cleaning" id="toc-data-cleaning" class="nav-link" data-scroll-target="#data-cleaning">Data Cleaning</a></li>
+  <li><a href="#data-manipulation" id="toc-data-manipulation" class="nav-link" data-scroll-target="#data-manipulation">Data Manipulation</a></li>
+  </ul></li>
+  <li><a href="#bag-of-words-models" id="toc-bag-of-words-models" class="nav-link" data-scroll-target="#bag-of-words-models">Bag of Words Models</a></li>
+  <li><a href="#classification-algorithms" id="toc-classification-algorithms" class="nav-link" data-scroll-target="#classification-algorithms">Classification Algorithms</a>
+  <ul class="collapse">
+  <li><a href="#classification-trees" id="toc-classification-trees" class="nav-link" data-scroll-target="#classification-trees">Classification Trees</a></li>
+  <li><a href="#random-forests" id="toc-random-forests" class="nav-link" data-scroll-target="#random-forests">Random Forests</a></li>
+  <li><a href="#feed-forward-neural-network" id="toc-feed-forward-neural-network" class="nav-link" data-scroll-target="#feed-forward-neural-network">Feed Forward Neural Network</a></li>
+  </ul></li>
+  <li><a href="#training-validation-and-testing" id="toc-training-validation-and-testing" class="nav-link" data-scroll-target="#training-validation-and-testing">Training, Validation and Testing</a></li>
+  </ul></li>
+  <li><a href="#results-and-discussion." id="toc-results-and-discussion." class="nav-link" data-scroll-target="#results-and-discussion.">3. Results and Discussion.</a>
+  <ul class="collapse">
+  <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis">Exploratory Data Analysis</a>
+  <ul class="collapse">
+  <li><a href="#imbalanced-data" id="toc-imbalanced-data" class="nav-link" data-scroll-target="#imbalanced-data">Imbalanced Data</a></li>
+  </ul></li>
+  <li><a href="#classification-trees-1" id="toc-classification-trees-1" class="nav-link" data-scroll-target="#classification-trees-1">Classification Trees</a></li>
+  <li><a href="#random-forests-1" id="toc-random-forests-1" class="nav-link" data-scroll-target="#random-forests-1">Random Forests</a>
+  <ul class="collapse">
+  <li><a href="#validation-analysis" id="toc-validation-analysis" class="nav-link" data-scroll-target="#validation-analysis">Validation Analysis</a></li>
+  <li><a href="#models-with-optimal-parameters" id="toc-models-with-optimal-parameters" class="nav-link" data-scroll-target="#models-with-optimal-parameters">Models with Optimal Parameters</a></li>
+  </ul></li>
+  <li><a href="#feed-forward-neural-network-1" id="toc-feed-forward-neural-network-1" class="nav-link" data-scroll-target="#feed-forward-neural-network-1">Feed Forward Neural Network</a>
+  <ul class="collapse">
+  <li><a href="#hyperparameter-tuning" id="toc-hyperparameter-tuning" class="nav-link" data-scroll-target="#hyperparameter-tuning">Hyperparameter Tuning</a></li>
+  <li><a href="#models-with-optimal-parameters-1" id="toc-models-with-optimal-parameters-1" class="nav-link" data-scroll-target="#models-with-optimal-parameters-1">Models with Optimal Parameters</a></li>
+  </ul></li>
+  <li><a href="#test-performance" id="toc-test-performance" class="nav-link" data-scroll-target="#test-performance">Test Performance</a></li>
+  </ul></li>
+  <li><a href="#conclusion." id="toc-conclusion." class="nav-link" data-scroll-target="#conclusion.">4. Conclusion.</a></li>
+  <li><a href="#references." id="toc-references." class="nav-link" data-scroll-target="#references.">References.</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Welcome!</h1>
+<h1 class="title">Predicting the President: An Exploration and Comparison of Classification algorithms.</h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Luke Barnes </p>
+          </div>
+  </div>
     
   
     
@@ -126,12 +191,639 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>This is a Quarto website.</p>
-<p>To learn more about Quarto websites visit <a href="https://quarto.org/docs/websites" class="uri">https://quarto.org/docs/websites</a>.</p>
+<section id="introduction." class="level1">
+<h1>1. Introduction.</h1>
+<p>The SONA (State of the Nation Address) is a highlight of the South African political calendar. Every year, and after every election, the South African president addresses parliament and the nation with a speech that highlights what the government has achieved over the past year and outlines the government’s important objectives over the next year. Since the beginning of 1994, there have been 36 SONA’s, by 6 presidents, each with their own distinct tone and diction. The distinct nature of these speeches and their structure suggest that given a sentence from one of the speeches, the president who delivered it is identifiable to a human who has seen the speeches before. Could predictive classification models identify the president solely from a sentence from one of their speeches?</p>
+<p>Analysis of the speeches given by presidents of other countries is abundant in the literature [<em>see <span class="citation" data-cites="miranda2021exploring">Miranda and Bringula (<a href="#ref-miranda2021exploring" role="doc-biblioref">2021</a>)</span>; <span class="citation" data-cites="najarzadegan2017critical">Najarzadegan, Dabaghi, and Eslami-Rasekh (<a href="#ref-najarzadegan2017critical" role="doc-biblioref">2017</a>)</span>; <span class="citation" data-cites="budiharto2018prediction">Budiharto and Meiliana (<a href="#ref-budiharto2018prediction" role="doc-biblioref">2018</a>)</span></em>]. These analyses focus on sentiment analysis and topic modelling. The purpose of this paper is to compare the ability of three classification algorithms to predict the South African president given a sentence from one of their speeches. The three classification algorithms that are assessed in this paper are: Classification Trees, Random Forests and Feed Forward Neural Networks.</p>
+</section>
+<section id="methodology." class="level1">
+<h1>2. Methodology.</h1>
+<section id="data" class="level2">
+<h2 class="anchored" data-anchor-id="data">Data</h2>
+<p>Each of the 36 SONA’s undergo cleaning and manipulation to create datasets that are usable by the classification models in the prediction process.</p>
+<section id="data-cleaning" class="level3">
+<h3 class="anchored" data-anchor-id="data-cleaning">Data Cleaning</h3>
+<p>One data frame is created using all 36 speeches. The dataframe consists of the speech identifier (in this instance, the name of the text file for that speech), and the speech itself. The name of the president who gave the speech and the year the speech was delivered are extracted from the speech identifier. The speech date is added to the dataframe by extracting it from the speech itself. Additionally, all unnecessary text is removed from each of the speeches.</p>
+</section>
+<section id="data-manipulation" class="level3">
+<h3 class="anchored" data-anchor-id="data-manipulation">Data Manipulation</h3>
+<p>The cleaned data set is then used to seperate each of the speeches into their sentences using tokenisation. The apostrophes and numbers are removed from each sentence in the data frame. A sentence identifier is added to the data frame. Columns are removed from the sentence data frame such that it only consists of the president name, the year of the speech, the speech sentences and the sentence identifier.</p>
+<p>The sentence data frame is then used to create a word data frame that consists of the words found in each of the speech sentences. This is similarly done using tokenisation. Each word now has it’s own row in the dataframe, along with its sentence identifier, the name of the president who said the sentence the word is in and the year of the speech. Stop words are removed from the dataframe to improve training model efficiency, and increase the separability between the different president’s speeches.</p>
+</section>
+</section>
+<section id="bag-of-words-models" class="level2">
+<h2 class="anchored" data-anchor-id="bag-of-words-models">Bag of Words Models</h2>
+<p>Two forms of word frequencies are considered and compared in this paper. Count Frequency and Term Frequency–Inverse Document Frequency (TF-IDF). Count frequency is a measure of the number of occurences of the word in the data frame. TF-IDF use a combination of relative frequencies and document frequencies to assign a score to each word in the data frame. For these frequency data frames to be usable by the classification algorithms for predictive modelling, the data frames have to be structured such that each word has its own column with its frequencies. These frequency data frames are then joined with the sentence data frame to form the model data frames. These new data frames have a column for each word in the word data frame. Each row of the model data frame reflects a sentence said by one of the presidents. The president column highlights the surname of the president who said that sentence. The remaining columns represent the count frequency or TF-IDF of each word in that sentence. These data frames can then be used to train classification algorithms to predict the president who said the sentence. For the rest of this paper, when the bag of words data frame is referenced, it refers to the data frame with word columns that hold the count frequency of the words in the sentence. In contrast, the TF-IDF data frame refers to data set with word columns that contain the tf-id frequency of the word in the sentence.</p>
+</section>
+<section id="classification-algorithms" class="level2">
+<h2 class="anchored" data-anchor-id="classification-algorithms">Classification Algorithms</h2>
+<section id="classification-trees" class="level3">
+<h3 class="anchored" data-anchor-id="classification-trees">Classification Trees</h3>
+<p>Classification Trees are one of the more simple predictive models to implement and use. They utilize recursive partitioning to split the observations into their different classes based on the most influential variables. The end result is a tree-like structure with a variable on each “branch” that indicates a partition in the feature space. The tree can then be used to classify an observation it has not seen before based on where it resides in the feature space.</p>
+</section>
+<section id="random-forests" class="level3">
+<h3 class="anchored" data-anchor-id="random-forests">Random Forests</h3>
+<p>Random Forests are an extension of decision trees, and thus classification trees. Where as Classification Trees classify an observation based off of a singular decision tree, random forests use an ensemble of classification trees to decide the class an observation belongs to. Each tree is formed using a subset of the variables in the data and a sample of the observations to ensure tree variation in the forest.</p>
+</section>
+<section id="feed-forward-neural-network" class="level3">
+<h3 class="anchored" data-anchor-id="feed-forward-neural-network">Feed Forward Neural Network</h3>
+<p>Feed Forward Neural Networks are one of the more complex predictive models used and implemented in this study. The classification feed forward neural networks take in a a data frame of predictors, pass them through a hidden layer or multiple hidden layers of nodes (each with their own weight), and outputs the probability of belonging to each class. Activation functions are applied to both the hidden layer and the output layer. The activation function applied to the hidden layers allow for more complex relationship identification by the network. The activation function applied to output layer ensures that the predictions are in the same form as the response. For classification problems, the output layer has the soft-max activation function applied to it. The classification network uses a cross entropy loss function to measure the performance of the network. It then uses an backpropagation to find the weights that most minimise the loss function.</p>
+<section id="keras-data-pre-processing" class="level4">
+<h4 class="anchored" data-anchor-id="keras-data-pre-processing">Keras Data Pre-Processing</h4>
+<p>To implement the Feed Forward Neural Network in R, using Keras, the data is required to undergo further pre-processing. The president class variable is transformed into an integer variable and one hot encoded. One hot encoding transforms the categorical single response column into multiple binary response columns, one for each president in the data frame. Additionally, the BOW data is scaled to make it compatible with Keras.</p>
+</section>
+</section>
+</section>
+<section id="training-validation-and-testing" class="level2">
+<h2 class="anchored" data-anchor-id="training-validation-and-testing">Training, Validation and Testing</h2>
+<p>Both the bag of words data frame and the TF-IDF data frame are split into training, validation and test data frames as follows:</p>
+<ul>
+<li>70% of the observations from each president are sampled for the training data frame.</li>
+<li>20% for the validation data frame.</li>
+<li>10% for the test data frame.</li>
+</ul>
+<p>These data frames are created once, and used consistently through out the predictive modelling process to ensure evaluation consistency across classification algorithms.</p>
+</section>
+</section>
+<section id="results-and-discussion." class="level1">
+<h1>3. Results and Discussion.</h1>
+<section id="exploratory-data-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="exploratory-data-analysis">Exploratory Data Analysis</h2>
+<p>Before any predictive models are implemented, exploratory data analysis (EDA) is conducted on the speeches. The EDA highlights numerous interesting and substantial aspects of the speech data set. Below, <a href="#fig-noOfWords">Figure&nbsp;1</a> shows the number of words spoken by each president in each of the speeches. There are many fascinating features of each President’s speeches that are identifiable. President Zuma uses fewer words in his SONA’s in comparison to the other presidents. The address given by de Klerk, pre elections in 1994, is the shortest speech, by a substantial margin. President Mbeki and President Ramaphosa have the most words in their speeches and follow a similar sentiment in their first SONA after replacing the previous president. President Mbeki’s first two speeches are comparable in length to President Mandela’s speeches. Equivalently, President Ramaphosa’s first address has a similar length to President Zuma’s speeches. The consistency of speech length to previous president’s is seemingly an important and notable factor for speech writers when producing the first address for a newly elected president.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-noOfWords" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/fig-noOfWords-1.png" class="img-fluid figure-img" width="1152"></p>
+<figcaption class="figure-caption"><strong>Figure</strong>&nbsp;1<strong>.</strong> Number of Words used in each of the SONA’s, colour coded by president.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><a href="#fig-sentLengthTime">Figure&nbsp;2</a> below shows the average length of a sentence in each of the SONAs over the years. They are colour coded by the president who delivered the speech. The figure further highlights the stand out sentiments from above while introducing new concepts of interest. President Zuma had the shortest speeches by word count and these speeches were on average comprised of short sentences. In contrast, President Mbeki tended to have his speeches comprised of longer sentences. It is interesting to note the immense contrast in average sentence length between President Mbeki’s first term as president (pre 2004) and his second term as president (post 2004). In his second term, his average sentence length increases by five words. Finally, the juxtaposition of the positioning of President Ramaphosa’s speeches in the plots below and above is intriguing. President Ramaphosa’s speech length rivals President Mbeki. However, the average length of the sentences used in his SONAs are closer to President Zuma. This is a purposeful decision in the speech writing process. Further, speech analysis and research is necessary to ascertain the likely reason for this decision.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-sentLengthTime" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/fig-sentLengthTime-1.png" class="img-fluid figure-img" width="1152"></p>
+<figcaption class="figure-caption"><strong>Figure</strong>&nbsp;2<strong>.</strong> Average length of sentence in each of the SONA’s, colour coded by president.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<section id="imbalanced-data" class="level3">
+<h3 class="anchored" data-anchor-id="imbalanced-data">Imbalanced Data</h3>
+<p>The most important feature highlighted in the exploratory data analysis above is that the data frame only has one SONA for both de Klerk and President Motlanthe. The reason why it is notable is that the sentence data frame is imbalanced. The multi-year presidents have over 1500 sentences in the data frame. In contrast, de Klerk and President Motlanthe both have under 300 sentences. If the entire data frame is used as is, these presidents would be disproportionately represented. The classification algorithms are likely to struggle to capture the class structure of sentences and more likely to develop a bias towards the presidents with the majority of the observations in the data frame. There are numerous methods of dealing with the imbalanced data. Oversampling algorithms would increase the representation of the two aforementioned presidents in the data set. However, the sentence count discrepancy between de Klerk and President Motlanthe and the other presidents suggest that the oversampling algorithms would need to create or sample vastly more sentence observations than observations in the data frame for these two presidents. <span class="citation" data-cites="mohammed2020machine">Mohammed, Rawashdeh, and Abdullah (<a href="#ref-mohammed2020machine" role="doc-biblioref">2020</a>)</span> highlights that the increase in the risk of overfitting the data is a severe limitation of oversampling algorithms. Therefore, de Klerk and President Motlanthe’s observations are removed from both the Bag of Words data frame and the TF-IDF data frame. Additionally, to deal with the imbalanced class structure of the data set among the remaining four presidents, 1500 sentence observations are randomly sampled from each president’s observations in both data frames. These 6000 observations are used to create the training, validation and testing data frames used in the predictive modelling process of the classification algorithms.</p>
+</section>
+</section>
+<section id="classification-trees-1" class="level2">
+<h2 class="anchored" data-anchor-id="classification-trees-1">Classification Trees</h2>
+<p>A full classification tree is fit to both the bag of words training data frame and the TF-IDF training data frame. The misclassification rate for both of the two models on the training data is shown below in <a href="#tbl-ct">Table&nbsp;1</a>. Both models perform poorly on their training data. The bag of words (BOW) model misclassified 72% of all the observations. The TF-IDF model misclassified 70% of the data frame’s observations.</p>
+<div id="tbl-ct" class="anchored">
+<table class="table">
+<caption>Table&nbsp;1<strong>.</strong> Classification Trees Training Misclassification Rate</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Training Misclassification %</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">BOW</td>
+<td style="text-align: center;">72</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">TF-IDF</td>
+<td style="text-align: center;">70.2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>These models perform slightly better than a single president classification algorithm (attribute all sentences to one president) that would have a misclassification rate of 75%. <a href="#tbl-confCTBOW">Table&nbsp;2</a> is a confusion matrix that highlights how the classification tree algorithm classifies observations in the BOW training data (columns) in comparison to the actual classification of the observations (rows). The table accentuates the largest issue the model (and the TF-IDF model) has. The majority of the sentences have been classified for President Ramaphosa. The model has then found multiple small splits in the feature space that has allowed it to identify a small subset of President Zuma and President Mbeki’s observations. Additionally, the model does not classify any of the sentences for President Mandela.</p>
+<div id="tbl-confCTBOW" class="anchored">
+<table class="table">
+<caption>Table&nbsp;2<strong>.</strong> Confusion Matrix for BOW Training Data</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Mandela</th>
+<th style="text-align: center;">Mbeki</th>
+<th style="text-align: center;">Ramaphosa</th>
+<th style="text-align: center;">Zuma</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Mandela</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">31</td>
+<td style="text-align: center;">1019</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Mbeki</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">74</td>
+<td style="text-align: center;">975</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Ramaphosa</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1049</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Zuma</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">10</td>
+<td style="text-align: center;">985</td>
+<td style="text-align: center;">55</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="random-forests-1" class="level2">
+<h2 class="anchored" data-anchor-id="random-forests-1">Random Forests</h2>
+<section id="validation-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="validation-analysis">Validation Analysis</h3>
+<p>The classification random forest modelling process requires validation analysis to choose the optimal set of parameters that will minimise the misclassification rate for the final model on the data. In this study, the optimal number of trees in each random forest is crucial to the model’s classification performance. <a href="#fig-BOWValRF">Figure&nbsp;3</a> shows the misclassification rate for random forest models on both the training and validation BOW data as the number of trees in the model increase from 100 trees to 3000 trees. The significant overlap between the rates for both the training data and the validation data suggests that the model is struggling to capture the class structure in the data and has not settled. The two main reasons for this issue are that the random forest model is ill-suited to deal with the data frame as is or a greater number of trees need to be considered in the BOW random forest model. Nonetheless, the random forest model with 2500 trees produces the lowest validation misclassification rate for the BOW data. Similarly, <a href="#fig-tfidfValRF">Figure&nbsp;4</a> shows the misclassification rate for random forest models on both the training and validation TF-IDF data for increasing numbers of trees. The difference in error between the training data and the validation data is more pronounced here, in contrast to the BOW random forest models. The TF-IDF random forest model with 1300 trees, misclassifies the least amount of sentences in the validation data.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-BOWValRF" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/fig-BOWValRF-1.png" class="img-fluid figure-img" width="1152"></p>
+<figcaption class="figure-caption"><strong>Figure</strong>&nbsp;3<strong>.</strong> Misclassification Rate on training (black) and validation (red) BOW data for increasing number of trees in random forest. The blue dotted line indicates the random forest model that misclassified the smallest number of sentences in the validation data.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-tfidfValRF" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/fig-tfidfValRF-1.png" class="img-fluid figure-img" width="1152"></p>
+<figcaption class="figure-caption"><strong>Figure</strong>&nbsp;4<strong>.</strong> Misclassification Rate on training (black) and validation (red) TF-IDF data for increasing number of trees in random forest. The blue dotted line indicates the random forest model that misclassified the smallest number of sentences in the validation data.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="models-with-optimal-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="models-with-optimal-parameters">Models with Optimal Parameters</h3>
+<p>The optimal number of trees for the models of both data sets, found using validation analysis, are used to fit two random forest models on the combined training and validation data.</p>
+<p>The misclassification rate for both of the two models on the combined data sets is shown below in <a href="#tbl-rf">Table&nbsp;3</a>. The random forest models improve on the misclassification rate, in contrast to the classification trees. These models misclassify under 50% of the sentences in their specified data sets. The bag of words (BOW) random forest model misclassified 49.7% of the observations. The TF-IDF random forest model misclassified 48.8% of the data frame’s observations.</p>
+<div id="tbl-rf" class="anchored">
+<table class="table">
+<caption>Table&nbsp;3<strong>.</strong> Random Forest Misclassification Rate</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Model Misclassification %</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">BOW</td>
+<td style="text-align: center;">49.7</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">TF-IDF</td>
+<td style="text-align: center;">48.8</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><a href="#tbl-panel">Table&nbsp;4</a> shows confusion matrices that highlight how the random forest classification algorithm classifies observations in the data (columns) in comparison to the actual classification of the observations (rows) for both data sets. <a href="#tbl-rfBOW">Table&nbsp;4 (a)</a> shows the classification contrast of the optimal BOW random forest model. Similarly, <a href="#tbl-rfTFIDF">Table&nbsp;4 (b)</a> highlights the difference in classification for the optimal TF-IDF random forest model. Alike to the issues that arose for the BOW Classification Tree model, the BOW random forest model is biased towards a president. Over 50% of sentences in the BOW data frame are classified as coming from a speech by President Zuma. In contrast, the TF-IDF random forest model does not suffer from the same problem. The classification from its model on its data is far more evenly spread, which suggests that it is far more successful in identifying the underlying class structure. However, the misclassification rate in <a href="#tbl-rf">Table&nbsp;3</a> highlights that the performance of these these models are incredibly similar.</p>
+<div id="tbl-panel" class="tbl-parent quarto-layout-panel anchored">
+<div class="panel-caption table-caption">
+<p>Table&nbsp;4<strong>.</strong> Random Forest Confusion Matrices</p>
+</div>
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div id="tbl-rfBOW" class="quarto-layout-cell quarto-layout-cell-subref anchored" data-ref-parent="tbl-panel" style="flex-basis: 50.0%;justify-content: center;">
+<table class="table">
+<caption>(a) Bag Of Words</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Mandela</th>
+<th style="text-align: center;">Mbeki</th>
+<th style="text-align: center;">Ramaphosa</th>
+<th style="text-align: center;">Zuma</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Mandela</td>
+<td style="text-align: center;">467</td>
+<td style="text-align: center;">312</td>
+<td style="text-align: center;">99</td>
+<td style="text-align: center;">487</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Mbeki</td>
+<td style="text-align: center;">192</td>
+<td style="text-align: center;">636</td>
+<td style="text-align: center;">103</td>
+<td style="text-align: center;">434</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Ramaphosa</td>
+<td style="text-align: center;">91</td>
+<td style="text-align: center;">132</td>
+<td style="text-align: center;">640</td>
+<td style="text-align: center;">502</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Zuma</td>
+<td style="text-align: center;">69</td>
+<td style="text-align: center;">138</td>
+<td style="text-align: center;">154</td>
+<td style="text-align: center;">1004</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="tbl-rfTFIDF" class="quarto-layout-cell quarto-layout-cell-subref anchored" data-ref-parent="tbl-panel" style="flex-basis: 50.0%;justify-content: center;">
+<table class="table">
+<caption>(b) TF-IDF</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Mandela</th>
+<th style="text-align: center;">Mbeki</th>
+<th style="text-align: center;">Ramaphosa</th>
+<th style="text-align: center;">Zuma</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Mandela</td>
+<td style="text-align: center;">582</td>
+<td style="text-align: center;">382</td>
+<td style="text-align: center;">87</td>
+<td style="text-align: center;">314</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Mbeki</td>
+<td style="text-align: center;">238</td>
+<td style="text-align: center;">720</td>
+<td style="text-align: center;">113</td>
+<td style="text-align: center;">294</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Ramaphosa</td>
+<td style="text-align: center;">114</td>
+<td style="text-align: center;">205</td>
+<td style="text-align: center;">712</td>
+<td style="text-align: center;">334</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Zuma</td>
+<td style="text-align: center;">150</td>
+<td style="text-align: center;">220</td>
+<td style="text-align: center;">215</td>
+<td style="text-align: center;">780</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="feed-forward-neural-network-1" class="level2">
+<h2 class="anchored" data-anchor-id="feed-forward-neural-network-1">Feed Forward Neural Network</h2>
+<section id="hyperparameter-tuning" class="level3">
+<h3 class="anchored" data-anchor-id="hyperparameter-tuning">Hyperparameter Tuning</h3>
+<p>Hyperparameter Tuning is a crucial facet of the neural network modelling process. In comparison to the random forests, where the only hyperparameter optimised for the models was the number of trees, these feed forward neural networks require the optimisation of multiple parameters to find the model that best classifies the speech sentences to the president. The hyperparameters optimised for the purpose of the neural networks in this study are the hidden layer activation functions, the number of nodes on the hidden layer, the dropout rate, the batch size and the number of hidden layers.</p>
+<section id="activation-functions-nodes-dropout-and-batch-size" class="level4">
+<h4 class="anchored" data-anchor-id="activation-functions-nodes-dropout-and-batch-size">Activation Functions, Nodes, Dropout and Batch Size</h4>
+<p>Both the BOW and the TF-IDF training and validation data sets were used to choose the optimal number of hidden layer nodes, the optimal dropout rate and the optimal batch size for each of their respective feed forward neural network models. The optimal hidden layer activation function is found for the TF-IDF data and used for both of the models. The hyperparameters and the considered values are shown below in <a href="#tbl-hypTune">Table&nbsp;5</a>.</p>
+<div id="tbl-hypTune" class="anchored">
+<table class="table">
+<caption>Table&nbsp;5<strong>.</strong> Considered Values for Hyperparameters</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Activation</th>
+<th style="text-align: center;">Nodes</th>
+<th style="text-align: center;">Dropout %</th>
+<th style="text-align: center;">Batch Size</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">ReLu</td>
+<td style="text-align: center;">32</td>
+<td style="text-align: center;">10</td>
+<td style="text-align: center;">16</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">SeLu</td>
+<td style="text-align: center;">64</td>
+<td style="text-align: center;">25</td>
+<td style="text-align: center;">32</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">TanH</td>
+<td style="text-align: center;">128</td>
+<td style="text-align: center;">40</td>
+<td style="text-align: center;">64</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Sigmoid</td>
+<td style="text-align: center;">256</td>
+<td style="text-align: center;">55</td>
+<td style="text-align: center;">128</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">-</td>
+<td style="text-align: center;">512</td>
+<td style="text-align: center;">70</td>
+<td style="text-align: center;">256</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">-</td>
+<td style="text-align: center;">1024</td>
+<td style="text-align: center;">85</td>
+<td style="text-align: center;">512</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The validation misclassification rate of TF-IDF feed forward neural networks for all 864 combinations of these hyperparameters are found. <a href="#fig-tfidfNNTune">Figure&nbsp;5</a> shows the performance of a subset of these TF-IDF neural networks as the number of nodes on the hidden layer increase from 32 to 1024. The batch size and the dropout % are fixed at their optimally found values of 16 and 10%. The feed forward neural networks using the Rectified Linear Unit (ReLu) activation function on the single hidden layer are the only group of networks that improve in performance as the number of nodes on the hidden layer increase. All of the neural networks with the other activation functions perform better in terms of classification with a smaller number of nodes on the hidden layer. Additionally, the discrepancy in the minimum validation misclassification rate between the ReLu activation function and the other activation functions is noticeable. The optimal activation function to use on the hidden layer is thus the ReLu activation function. 1024 nodes is the optimal number for the hidden layer of the TF-IDF feed forward neural network model.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-tfidfNNTune" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/fig-tfidfNNTune-1.png" class="img-fluid figure-img" width="1152"></p>
+<figcaption class="figure-caption"><strong>Figure</strong>&nbsp;5<strong>.</strong> Validation Misclassification Rate for TF-IDF neural networks with various hidden layer activation functions for an increasing number of nodes on the hidden layer (batch size = 16 and dropout = 10%). The activation functions used are: Relu (black), Selu (red), Tanh (purple) and Sigmoid (green). The blue dotted line indicates the optimal number of nodes on a single hidden layer network.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The ReLu activation function is the only activation considered in the tuning process of the hyperparameters for the BOW Feed Forward Neural Network. <a href="#fig-BOWNNTune">Figure&nbsp;6</a> shows the validation misclassification rate, as the number of nodes on the hidden layer increase, for a subset of the neural networks with the optimally chosen batch size fixed at 512 and the dropout rate fixed at the optimal 55%. The optimal number of nodes to have on the hidden layer, according to the BOW validation data, is 128.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-BOWNNTune" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/fig-BOWNNTune-1.png" class="img-fluid figure-img" width="1152"></p>
+<figcaption class="figure-caption"><strong>Figure</strong>&nbsp;6<strong>.</strong> Validation Misclassification Rate for BOW neural networks with the ReLu hidden layer activation function for an increasing number of nodes on the hidden layer (batch size = 512 and dropout = 55%). The blue dotted line indicates the optimal number of nodes on a single hidden layer network.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="number-of-hidden-layers" class="level4">
+<h4 class="anchored" data-anchor-id="number-of-hidden-layers">Number of Hidden Layers</h4>
+<p>The other hyperparameter considered for tuning in the study’s neural network modelling process is the number of hidden layers. The optimal number of hidden layers is found using the TF-IDF training and validation data. The optimal hyperparameters found previously for the TF-IDF feed forward neural networks are used in these models. The only caveat is that the number of nodes on each additional hidden layer is half of the hidden layer before it. <a href="#tbl-hidLay">Table&nbsp;6</a> shows the performance of the neural network model as the number of hidden layers in the model increase. The table suggests that additional hidden layers, decrease the model’s identify the class structure within the data.</p>
+<div id="tbl-hidLay" class="anchored">
+<table class="table">
+<caption>Table&nbsp;6<strong>.</strong> Validation Misclassification % as hidden layers are added</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Hidden Layers</th>
+<th style="text-align: center;">1</th>
+<th style="text-align: center;">2</th>
+<th style="text-align: center;">3</th>
+<th style="text-align: center;">4</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Misclassification %</td>
+<td style="text-align: center;">42.9</td>
+<td style="text-align: center;">43.9</td>
+<td style="text-align: center;">44.9</td>
+<td style="text-align: center;">44.7</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="models-with-optimal-parameters-1" class="level3">
+<h3 class="anchored" data-anchor-id="models-with-optimal-parameters-1">Models with Optimal Parameters</h3>
+<p>The optimal hyperparameters used to train and fit the two feed forward neural networks, in addition to the validation misclassification rate of the models, are shown in <a href="#tbl-optHypNN">Table&nbsp;7</a>. The drastic difference between the performance of the optimal feed forward neural network on the BOW and the TF-IDF data is sizable. The BOW neural network classifies close to 55% of the sentences incorrectly. In contrast, the TF-IDF neural network only misclassifies close to 40% of the sentences in the TF-IDF validation data frame.</p>
+<div id="tbl-optHypNN" class="anchored">
+<table class="table">
+<caption>Table&nbsp;7<strong>.</strong> Optimal Hyperparameters and Model Performance</caption>
+<colgroup>
+<col style="width: 10%">
+<col style="width: 15%">
+<col style="width: 9%">
+<col style="width: 14%">
+<col style="width: 15%">
+<col style="width: 19%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Activation</th>
+<th style="text-align: center;">Nodes</th>
+<th style="text-align: center;">Dropout %</th>
+<th style="text-align: center;">Batch Size</th>
+<th style="text-align: center;">Hidden Layers</th>
+<th style="text-align: center;">Misclass %</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">BOW</td>
+<td style="text-align: center;">ReLu</td>
+<td style="text-align: center;">128</td>
+<td style="text-align: center;">55</td>
+<td style="text-align: center;">512</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">54.4</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">TF-IDF</td>
+<td style="text-align: center;">ReLu</td>
+<td style="text-align: center;">1024</td>
+<td style="text-align: center;">10</td>
+<td style="text-align: center;">16</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">42.3</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="test-performance" class="level2">
+<h2 class="anchored" data-anchor-id="test-performance">Test Performance</h2>
+<p>Each of the classification model’s considered in this study have their predictive capabilities tested with the respective test data sets. The misclassification rates for the BOW models are calculated on the BOW test data. Similarly, the performance of the TF-IDF models is calculated on the TF-IDF test data. <a href="#tbl-testPerf">Table&nbsp;8</a> shows the test misclassification rates for all six of the classification models, ranked overall from best to worst. The TF-IDF neural network is the best classifier produced in this study. It accurately misclassifies 40% of the sentences in the test data to the president who used them in a SONA. Conversely, the BOW Classification Tree is the worst performing model. It incorrectly classifies over 71% of test sentences.</p>
+<div id="tbl-testPerf" class="anchored">
+<table class="table">
+<caption>Table&nbsp;8<strong>.</strong> Performance of Models on Test Data</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Test Misclassification %</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Neural Network (TF-IDF)</td>
+<td style="text-align: center;">40.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Random Forest (TF-IDF)</td>
+<td style="text-align: center;">47.4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Random Forest (BOW)</td>
+<td style="text-align: center;">47.8</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Neural Network (BOW)</td>
+<td style="text-align: center;">54.4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Classificiation Tree (TF-IDF)</td>
+<td style="text-align: center;">70.2</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Classificiation Tree (BOW)</td>
+<td style="text-align: center;">71.7</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The most interesting feature of the table is that the BOW random forest outperforms the BOW neural network in classifying sentences to presidents by over 6%. <a href="#tbl-panelTest">Table&nbsp;9</a> shows the confusion matrices comparing the predicted president classification (columns) to the actual president classification (rows) for the test data for both models. <a href="#tbl-nnBOWTest">Table&nbsp;9 (b)</a> highlights that the BOW neural network is seemingly classifying close to 50% of the test sentences as from President Mandela. This is similar to the issues experienced by both the BOW classification tree model and the BOW random forest model. Each of these BOW models exhibit a strong bias towards a president. Even though it is not as pronounced in <a href="#tbl-rfBOWTest">Table&nbsp;9 (a)</a>, the BOW random forest model’s bias towards classifying sentences for President Zuma is clear. These results suggest that all of the BOW models are struggling to identify the true class structure in the BOW sentence data. The consistency of the problem indicates that the issue is with the construction of the BOW data frame with the count frequencies and not the models themselves.</p>
+<div id="tbl-panelTest" class="tbl-parent quarto-layout-panel anchored">
+<div class="panel-caption table-caption">
+<p>Table&nbsp;9<strong>.</strong> BOW Test Confusion Matrices</p>
+</div>
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div id="tbl-rfBOWTest" class="quarto-layout-cell quarto-layout-cell-subref anchored" data-ref-parent="tbl-panelTest" style="flex-basis: 50.0%;justify-content: center;">
+<table class="table">
+<caption>(a) Random Forest</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Mandela</th>
+<th style="text-align: center;">Mbeki</th>
+<th style="text-align: center;">Ramaphosa</th>
+<th style="text-align: center;">Zuma</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Mandela</td>
+<td style="text-align: center;">52</td>
+<td style="text-align: center;">29</td>
+<td style="text-align: center;">8</td>
+<td style="text-align: center;">46</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Mbeki</td>
+<td style="text-align: center;">18</td>
+<td style="text-align: center;">69</td>
+<td style="text-align: center;">9</td>
+<td style="text-align: center;">39</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Ramaphosa</td>
+<td style="text-align: center;">11</td>
+<td style="text-align: center;">18</td>
+<td style="text-align: center;">68</td>
+<td style="text-align: center;">38</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Zuma</td>
+<td style="text-align: center;">6</td>
+<td style="text-align: center;">13</td>
+<td style="text-align: center;">23</td>
+<td style="text-align: center;">93</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="tbl-nnBOWTest" class="quarto-layout-cell quarto-layout-cell-subref anchored" data-ref-parent="tbl-panelTest" style="flex-basis: 50.0%;justify-content: center;">
+<table class="table">
+<caption>(b) Neural Network</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Mandela</th>
+<th style="text-align: center;">Mbeki</th>
+<th style="text-align: center;">Ramaphosa</th>
+<th style="text-align: center;">Zuma</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Mandela</td>
+<td style="text-align: center;">103</td>
+<td style="text-align: center;">19</td>
+<td style="text-align: center;">6</td>
+<td style="text-align: center;">7</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Mbeki</td>
+<td style="text-align: center;">68</td>
+<td style="text-align: center;">43</td>
+<td style="text-align: center;">7</td>
+<td style="text-align: center;">17</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Ramaphosa</td>
+<td style="text-align: center;">57</td>
+<td style="text-align: center;">11</td>
+<td style="text-align: center;">56</td>
+<td style="text-align: center;">11</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Zuma</td>
+<td style="text-align: center;">59</td>
+<td style="text-align: center;">14</td>
+<td style="text-align: center;">18</td>
+<td style="text-align: center;">44</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="conclusion." class="level1">
+<h1>4. Conclusion.</h1>
+<p>This study seeked to find the best performing classification algorithm for identifying the president given a sentence from one of their State of the Nation addresses. Three classification algorithms were considered for two frequency variations of the speech sentence data. The feed forward neural network was the best performing classifier for the Term Frequency–Inverse Document Frequency data and overall. The classification trees performed marginally better than a single president classification algorithm for both the Bag of Words data and the TF-IDF data. The random forest model produced a smaller misclassification rate than the feed forward neural network for the BOW data. The feed forward neural network appears to be the best classifier to use for sentence identification when used in conjunction with the TF-IDF weighted scores. None of the models perform well enough to the extent that they could be used confidently to classify a SONA sentence from a president. Further research, should explore why count frequencies perform worse than TF-IDF scores across classification algorithms. Additionally, further and more thorough hyperparameter tuning should be investigated for the feed forward neural networks in an attempt to improve their classification performance. In conclusion, there are benefits to using classification algorithms to identify the president from a SONA sentence, however, further explorative research is necessary to optimise the performance of these models.</p>
+</section>
+<section id="references." class="level1">
 
 
 
-</main> <!-- /main -->
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References.</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-budiharto2018prediction" class="csl-entry" role="listitem">
+Budiharto, Widodo, and Meiliana Meiliana. 2018. <span>“Prediction and Analysis of Indonesia Presidential Election from Twitter Using Sentiment Analysis.”</span> <em>Journal of Big Data</em> 5 (1): 1–10.
+</div>
+<div id="ref-miranda2021exploring" class="csl-entry" role="listitem">
+Miranda, John Paul P, and Rex P Bringula. 2021. <span>“Exploring Philippine Presidents’ Speeches: A Sentiment Analysis and Topic Modeling Approach.”</span> <em>Cogent Social Sciences</em> 7 (1): 1932030.
+</div>
+<div id="ref-mohammed2020machine" class="csl-entry" role="listitem">
+Mohammed, Roweida, Jumanah Rawashdeh, and Malak Abdullah. 2020. <span>“Machine Learning with Oversampling and Undersampling Techniques: Overview Study and Experimental Results.”</span> In <em>2020 11th International Conference on Information and Communication Systems (ICICS)</em>, 243–48. IEEE.
+</div>
+<div id="ref-najarzadegan2017critical" class="csl-entry" role="listitem">
+Najarzadegan, Sahar, Azizollah Dabaghi, and Abbass Eslami-Rasekh. 2017. <span>“A Critical Discourse Analysis of Iran and US Presidential Speeches at the UN: The Sociopragmatic Functions.”</span> <em>Theory and Practice in Language Studies</em> 7 (9): 764.
+</div>
+<div id="ref-a" class="csl-entry" role="listitem">
+R Core Team. 2022. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.
+</div>
+<div id="ref-b" class="csl-entry" role="listitem">
+Wickham, Hadley. 2016. <em>Ggplot2: Elegant Graphics for Data Analysis</em>. Springer-Verlag New York. <a href="https://ggplot2.tidyverse.org">https://ggplot2.tidyverse.org</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
