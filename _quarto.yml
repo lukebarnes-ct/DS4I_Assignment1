@@ -19,3 +19,4 @@ format:
       fig-title: '**Figure**'
       fig-labels: arabic
       title-delim: "**.**"
+    embed-resources: true
