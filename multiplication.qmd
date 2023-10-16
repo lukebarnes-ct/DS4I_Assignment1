@@ -1,9 +1,0 @@
----
-title: "Multiplying numbers in R"
----
-
-To multiply numbers in R use `*`
-
-```{r}
-2 * 3
-```

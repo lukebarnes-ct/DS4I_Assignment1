@@ -1,9 +1,0 @@
----
-title: "Adding numbers in R"
----
-
-To add numbers in R use `+`
-
-```{r}
-1 + 1
-```
