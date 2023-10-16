@@ -341,17 +341,17 @@ Feed Forward Neural Networks are one of the more complex predictive models used 
 
 #### Keras Data Pre-Processing
 
-To implement the Feed Forward Neural Network in R, using Keras, the data is required to undergo further pre-processing. The president class variable is transformed into an integer variable and one hot encoded. One hot encoding transforms the categorical single response column into multiple binary response columns, one for each president in the data frame. Additionally, the BOW data is scaled to make it compatible with Keras. 
+To implement the Feed Forward Neural Network in R, using Keras, the data is required to undergo further pre-processing. The president class variable is transformed into an integer variable and one hot encoded. One hot encoding transforms the categorical single response column into multiple binary response columns, one for each president in the data frame. Additionally, the BOW data is scaled to make it compatible with Keras.
 
 ## Training, Validation and Testing
 
 Both the bag of words data frame and the TF-IDF data frame are split into training, validation and test data frames as follows:
 
 -   70% of the observations from each president are sampled for the training data frame.
--   20% for the validation data frame. 
+-   20% for the validation data frame.
 -   10% for the test data frame.
 
-These data frames are created once, and used consistently through out the predictive modelling process to ensure evaluation consistency across classification algorithms. 
+These data frames are created once, and used consistently through out the predictive modelling process to ensure evaluation consistency across classification algorithms.
 
 # 3. Results and Discussion.
 
@@ -392,7 +392,7 @@ ggplot(edaPlotData, aes(x = Year, y = nWords, color = President, shape = Preside
 
 ```
 
-@fig-sentLengthTime below shows the average length of a sentence in each of the SONAs over the years. They are colour coded by the president who delivered the speech. The figure further highlights the stand out sentiments from above while introducing new concepts of interest. President Zuma had the shortest speeches by word count and these speeches were on average comprised of short sentences. In contrast, President Mbeki tended to have his speeches comprised of longer sentences. It is interesting to note the immense contrast in average sentence length between President Mbeki's first term as president (pre 2004) and his second term as president (post 2004). In his second term, his average sentence length increases by five words. Finally, the juxtaposition of the positioning of President Ramaphosa's speeches in the plots below and above is intriguing. President Ramaphosa's speech length rivals President Mbeki. However, the average length of the sentences used in his SONAs are closer to President Zuma. This is a purposeful decision in the speech writing process. Further, speech analysis and research is necessary to ascertain the likely reason for this decision. 
+@fig-sentLengthTime below shows the average length of a sentence in each of the SONAs over the years. They are colour coded by the president who delivered the speech. The figure further highlights the stand out sentiments from above while introducing new concepts of interest. President Zuma had the shortest speeches by word count and these speeches were on average comprised of short sentences. In contrast, President Mbeki tended to have his speeches comprised of longer sentences. It is interesting to note the immense contrast in average sentence length between President Mbeki's first term as president (pre 2004) and his second term as president (post 2004). In his second term, his average sentence length increases by five words. Finally, the juxtaposition of the positioning of President Ramaphosa's speeches in the plots below and above is intriguing. President Ramaphosa's speech length rivals President Mbeki. However, the average length of the sentences used in his SONAs are closer to President Zuma. This is a purposeful decision in the speech writing process. Further, speech analysis and research is necessary to ascertain the likely reason for this decision.
 
 ```{r fig-sentLengthTime, fig.align='center', fig.height=6, fig.width=12, fig.cap="Average length of sentence in each of the SONA's, colour coded by president.", echo=FALSE}
 
@@ -428,7 +428,6 @@ ggplot(edaPlotData1, aes(x = Year, y = Length, color = President, shape = Presid
   theme_bw(base_size = 14)
 
 ```
-
 
 ### Imbalanced Data
 
@@ -467,24 +466,23 @@ classError.TF.IDF.CT = (1 - round(sum(diag(trainPred.TF.IDF))/sum(trainPred.TF.I
 
 ```
 
-A full classification tree is fit to both the bag of words training data frame and the TF-IDF training data frame. The misclassification rate for both of the two models on the training data is shown below in @tbl-ct. Both models perform poorly on their training data. The bag of words (BOW) model misclassified 72% of all the observations. The TF-IDF model misclassified 70% of the data frame's observations. 
+A full classification tree is fit to both the bag of words training data frame and the TF-IDF training data frame. The misclassification rate for both of the two models on the training data is shown below in @tbl-ct. Both models perform poorly on their training data. The bag of words (BOW) model misclassified 72% of all the observations. The TF-IDF model misclassified 70% of the data frame's observations.
 
 |        | Training Misclassification % |
 |:------:|:----------------------------:|
-|   BOW  |              72              |
+|  BOW   |              72              |
 | TF-IDF |             70.2             |
 
 : Classification Trees Training Misclassification Rate {#tbl-ct}
 
-These models perform slightly better than a single president classification algorithm (attribute all sentences to one president) that would have a misclassification rate of 75%. @tbl-confCTBOW is a confusion matrix that highlights how the classification tree algorithm classifies observations in the BOW training data (columns) in comparison to the actual classification of the observations (rows). The table accentuates the largest issue the model (and the TF-IDF model) has. The majority of the sentences have been classified for President Ramaphosa. The model has then found multiple small splits in the feature space that has allowed it to identify a small subset of President Zuma and President Mbeki's observations. Additionally, the model does not classify any of the sentences for President Mandela. 
-
+These models perform slightly better than a single president classification algorithm (attribute all sentences to one president) that would have a misclassification rate of 75%. @tbl-confCTBOW is a confusion matrix that highlights how the classification tree algorithm classifies observations in the BOW training data (columns) in comparison to the actual classification of the observations (rows). The table accentuates the largest issue the model (and the TF-IDF model) has. The majority of the sentences have been classified for President Ramaphosa. The model has then found multiple small splits in the feature space that has allowed it to identify a small subset of President Zuma and President Mbeki's observations. Additionally, the model does not classify any of the sentences for President Mandela.
 
 |           | Mandela | Mbeki | Ramaphosa | Zuma |
 |:---------:|:-------:|:-----:|:---------:|:----:|
-|  Mandela  |    0    |   31  |    1019   |   0  |
-|   Mbeki   |    0    |   74  |    975    |   1  |
-| Ramaphosa |    0    |   1   |    1049   |   0  |
-|    Zuma   |    0    |   10  |    985    |  55  |
+|  Mandela  |    0    |  31   |   1019    |  0   |
+|   Mbeki   |    0    |  74   |    975    |  1   |
+| Ramaphosa |    0    |   1   |   1049    |  0   |
+|   Zuma    |    0    |  10   |    985    |  55  |
 
 : Confusion Matrix for BOW Training Data {#tbl-confCTBOW}
 
@@ -553,7 +551,7 @@ minTrees.TF.IDF.RF = seq[which.min(valErr)]
 
 ### Validation Analysis
 
-The classification random forest modelling process requires validation analysis to choose the optimal set of parameters that will minimise the misclassification rate for the final model on the data. In this study, the optimal number of trees in each random forest is crucial to the model's classification performance. @fig-BOWValRF shows the misclassification rate for random forest models on both the training and validation BOW data as the number of trees in the model increase from 100 trees to 3000 trees. The significant overlap between the rates for both the training data and the validation data suggests that the model is struggling to capture the class structure in the data and has not settled. The two main reasons for this issue are that the random forest model is ill-suited to deal with the data frame as is or a greater number of trees need to be considered in the BOW random forest model. Nonetheless, the random forest model with 2500 trees produces the lowest validation misclassification rate for the BOW data. Similarly, @fig-tfidfValRF shows the misclassification rate for random forest models on both the training and validation TF-IDF data for increasing numbers of trees. The difference in error between the training data and the validation data is more pronounced here, in contrast to the BOW random forest models. The TF-IDF random forest model with 1300 trees, misclassifies the least amount of sentences in the validation data. 
+The classification random forest modelling process requires validation analysis to choose the optimal set of parameters that will minimise the misclassification rate for the final model on the data. In this study, the optimal number of trees in each random forest is crucial to the model's classification performance. @fig-BOWValRF shows the misclassification rate for random forest models on both the training and validation BOW data as the number of trees in the model increase from 100 trees to 3000 trees. The significant overlap between the rates for both the training data and the validation data suggests that the model is struggling to capture the class structure in the data and has not settled. The two main reasons for this issue are that the random forest model is ill-suited to deal with the data frame as is or a greater number of trees need to be considered in the BOW random forest model. Nonetheless, the random forest model with 2500 trees produces the lowest validation misclassification rate for the BOW data. Similarly, @fig-tfidfValRF shows the misclassification rate for random forest models on both the training and validation TF-IDF data for increasing numbers of trees. The difference in error between the training data and the validation data is more pronounced here, in contrast to the BOW random forest models. The TF-IDF random forest model with 1300 trees, misclassifies the least amount of sentences in the validation data.
 
 ```{r fig-BOWValRF, fig.align='center', fig.height=6, fig.width=12, fig.cap="Misclassification Rate on training (black) and validation (red) BOW data for increasing number of trees in random forest. The blue dotted line indicates the random forest model that misclassified the smallest number of sentences in the validation data.", echo=FALSE}
 
@@ -570,8 +568,6 @@ ggplot(valPlotDataBOW, aes(x = Seq)) +
   theme_bw(base_size = 14)
 
 ```
-
-
 
 ```{r fig-tfidfValRF, fig.align='center', fig.height=6, fig.width=12, fig.cap="Misclassification Rate on training (black) and validation (red) TF-IDF data for increasing number of trees in random forest. The blue dotted line indicates the random forest model that misclassified the smallest number of sentences in the validation data.", echo=FALSE}
 
@@ -620,39 +616,35 @@ classError.TF.IDF.RF = round(tf.idf.Fit.Ranger$prediction.error, 3)
 
 ```
 
+The optimal number of trees for the models of both data sets, found using validation analysis, are used to fit two random forest models on the combined training and validation data.
 
-The optimal number of trees for the models of both data sets, found using validation analysis, are used to fit two random forest models on the combined training and validation data. 
-
-The misclassification rate for both of the two models on the combined data sets is shown below in @tbl-rf. The random forest models improve on the misclassification rate, in contrast to the classification trees. These models misclassify under 50% of the sentences in their specified data sets. The bag of words (BOW) random forest model misclassified 49.7% of the observations. The TF-IDF random forest model misclassified 48.8% of the data frame's observations. 
+The misclassification rate for both of the two models on the combined data sets is shown below in @tbl-rf. The random forest models improve on the misclassification rate, in contrast to the classification trees. These models misclassify under 50% of the sentences in their specified data sets. The bag of words (BOW) random forest model misclassified 49.7% of the observations. The TF-IDF random forest model misclassified 48.8% of the data frame's observations.
 
 |        | Model Misclassification % |
-|:------:|:----------------------------:|
-|   BOW  |             49.7             |
-| TF-IDF |             48.8             |
+|:------:|:-------------------------:|
+|  BOW   |           49.7            |
+| TF-IDF |           48.8            |
 
 : Random Forest Misclassification Rate {#tbl-rf}
 
-@tbl-panel shows confusion matrices that highlight how the random forest classification algorithm classifies observations in the data (columns) in comparison to the actual classification of the observations (rows) for both data sets. @tbl-rfBOW shows the classification contrast of the optimal BOW random forest model. Similarly, @tbl-rfTFIDF highlights the difference in classification for the optimal TF-IDF random forest model. Alike to the issues that arose for the BOW Classification Tree model, the BOW random forest model is biased towards a president. Over 50% of sentences in the BOW data frame are classified as coming from a speech by President Zuma. In contrast, the TF-IDF random forest model does not suffer from the same problem. The classification from its model on its data is far more evenly spread, which suggests that it is far more successful in identifying the underlying class structure. However, the misclassification rate in @tbl-rf highlights that the performance of these these models are incredibly similar. 
+@tbl-panel shows confusion matrices that highlight how the random forest classification algorithm classifies observations in the data (columns) in comparison to the actual classification of the observations (rows) for both data sets. @tbl-rfBOW shows the classification contrast of the optimal BOW random forest model. Similarly, @tbl-rfTFIDF highlights the difference in classification for the optimal TF-IDF random forest model. Alike to the issues that arose for the BOW Classification Tree model, the BOW random forest model is biased towards a president. Over 50% of sentences in the BOW data frame are classified as coming from a speech by President Zuma. In contrast, the TF-IDF random forest model does not suffer from the same problem. The classification from its model on its data is far more evenly spread, which suggests that it is far more successful in identifying the underlying class structure. However, the misclassification rate in @tbl-rf highlights that the performance of these these models are incredibly similar.
 
-::: {#tbl-panel layout-ncol=2}
-
+::: {#tbl-panel layout-ncol="2"}
 |           | Mandela | Mbeki | Ramaphosa | Zuma |
 |:---------:|:-------:|:-----:|:---------:|:----:|
-|  Mandela  |   467   |  312  |     99    |  487 |
-|   Mbeki   |   192   |  636  |    103    |  434 |
-| Ramaphosa |    91   |  132  |    640    |  502 |
-|    Zuma   |    69   |  138  |    154    | 1004 |
-
+|  Mandela  |   467   |  312  |    99     | 487  |
+|   Mbeki   |   192   |  636  |    103    | 434  |
+| Ramaphosa |   91    |  132  |    640    | 502  |
+|   Zuma    |   69    |  138  |    154    | 1004 |
 
 : Bag Of Words {#tbl-rfBOW}
 
 |           | Mandela | Mbeki | Ramaphosa | Zuma |
 |:---------:|:-------:|:-----:|:---------:|:----:|
-|  Mandela  |   582   |  382  |     87    |  314 |
-|   Mbeki   |   238   |  720  |    113    |  294 |
-| Ramaphosa |   114   |  205  |    712    |  334 |
-|    Zuma   |   150   |  220  |    215    |  780 |
-
+|  Mandela  |   582   |  382  |    87     | 314  |
+|   Mbeki   |   238   |  720  |    113    | 294  |
+| Ramaphosa |   114   |  205  |    712    | 334  |
+|   Zuma    |   150   |  220  |    215    | 780  |
 
 : TF-IDF {#tbl-rfTFIDF}
 
@@ -740,25 +732,24 @@ presNum = dim(presTarget.train.BOW.OH)[2]
 
 ### Hyperparameter Tuning
 
-Hyperparameter Tuning is a crucial facet of the neural network modelling process. In comparison to the random forests, where the only hyperparameter optimised for the models was the number of trees, these feed forward neural networks require the optimisation of multiple parameters to find the model that best classifies the speech sentences to the president. The hyperparameters optimised for the purpose of the neural networks in this study are the hidden layer activation functions, the number of nodes on the hidden layer, the dropout rate, the batch size and the number of hidden layers.  
+Hyperparameter Tuning is a crucial facet of the neural network modelling process. In comparison to the random forests, where the only hyperparameter optimised for the models was the number of trees, these feed forward neural networks require the optimisation of multiple parameters to find the model that best classifies the speech sentences to the president. The hyperparameters optimised for the purpose of the neural networks in this study are the hidden layer activation functions, the number of nodes on the hidden layer, the dropout rate, the batch size and the number of hidden layers.
 
 #### Activation Functions, Nodes, Dropout and Batch Size
 
-Both the BOW and the TF-IDF training and validation data sets were used to choose the optimal number of hidden layer nodes, the optimal dropout rate and the optimal batch size for each of their respective feed forward neural network models. The optimal hidden layer activation function is found for the TF-IDF data and used for both of the models. The hyperparameters and the considered values are shown below in @tbl-hypTune. 
+Both the BOW and the TF-IDF training and validation data sets were used to choose the optimal number of hidden layer nodes, the optimal dropout rate and the optimal batch size for each of their respective feed forward neural network models. The optimal hidden layer activation function is found for the TF-IDF data and used for both of the models. The hyperparameters and the considered values are shown below in @tbl-hypTune.
 
-| Activation |  Nodes  | Dropout % | Batch Size |
-|:----------:|:-------:|:---------:|:----------:|
-|  ReLu      |   32    |    10     |     16     |
-|  SeLu      |   64    |    25     |     32     |
-|  TanH      |   128   |    40     |     64     |
-|  Sigmoid   |   256   |    55     |    128     |
-|     -      |   512   |    70     |    256     |
-|     -      |   1024  |    85     |    512     |
+| Activation | Nodes | Dropout % | Batch Size |
+|:----------:|:-----:|:---------:|:----------:|
+|    ReLu    |  32   |    10     |     16     |
+|    SeLu    |  64   |    25     |     32     |
+|    TanH    |  128  |    40     |     64     |
+|  Sigmoid   |  256  |    55     |    128     |
+|     \-     |  512  |    70     |    256     |
+|     \-     | 1024  |    85     |    512     |
 
 : Considered Values for Hyperparameters {#tbl-hypTune}
 
-The validation misclassification rate of TF-IDF feed forward neural networks for
-all 864 combinations of these hyperparameters are found. @fig-tfidfNNTune shows the performance of a subset of these TF-IDF neural networks as the number of nodes on the hidden layer increase from 32 to 1024. The batch size and the dropout % are fixed at their optimally found values of 16 and 10%. The feed forward neural networks using the Rectified Linear Unit (ReLu) activation function on the single hidden layer are the only group of networks that improve in performance as the number of nodes on the hidden layer increase. All of the neural networks with the other activation functions perform better in terms of classification with a smaller number of nodes on the hidden layer. Additionally, the discrepancy in the minimum validation misclassification rate between the ReLu activation function and the other activation functions is noticeable. The optimal activation function to use on the hidden layer is thus the ReLu activation function. 1024 nodes is the optimal number for the hidden layer of the TF-IDF feed forward neural network model. 
+The validation misclassification rate of TF-IDF feed forward neural networks for all 864 combinations of these hyperparameters are found. @fig-tfidfNNTune shows the performance of a subset of these TF-IDF neural networks as the number of nodes on the hidden layer increase from 32 to 1024. The batch size and the dropout % are fixed at their optimally found values of 16 and 10%. The feed forward neural networks using the Rectified Linear Unit (ReLu) activation function on the single hidden layer are the only group of networks that improve in performance as the number of nodes on the hidden layer increase. All of the neural networks with the other activation functions perform better in terms of classification with a smaller number of nodes on the hidden layer. Additionally, the discrepancy in the minimum validation misclassification rate between the ReLu activation function and the other activation functions is noticeable. The optimal activation function to use on the hidden layer is thus the ReLu activation function. 1024 nodes is the optimal number for the hidden layer of the TF-IDF feed forward neural network model.
 
 ```{r eval=FALSE, echo=FALSE}
 
@@ -934,7 +925,7 @@ ggplot(tuningPlotData.TF.IDF, aes(x = HL)) +
 
 ```
 
-The ReLu activation function is the only activation considered in the tuning process of the hyperparameters for the BOW Feed Forward Neural Network. @fig-BOWNNTune shows the validation misclassification rate, as the number of nodes on the hidden layer increase, for a subset of the neural networks with the optimally chosen batch size fixed at 512 and the dropout rate fixed at the optimal 55%. The optimal number of nodes to have on the hidden layer, according to the BOW validation data, is 128. 
+The ReLu activation function is the only activation considered in the tuning process of the hyperparameters for the BOW Feed Forward Neural Network. @fig-BOWNNTune shows the validation misclassification rate, as the number of nodes on the hidden layer increase, for a subset of the neural networks with the optimally chosen batch size fixed at 512 and the dropout rate fixed at the optimal 55%. The optimal number of nodes to have on the hidden layer, according to the BOW validation data, is 128.
 
 ```{r fig-BOWNNTune, fig.align='center', fig.height=6, fig.width=12, fig.cap="Validation Misclassification Rate for BOW neural networks with the ReLu hidden layer activation function for an increasing number of nodes on the hidden layer (batch size = 512 and dropout = 55%). The blue dotted line indicates the optimal number of nodes on a single hidden layer network.", echo=FALSE}
 
@@ -949,7 +940,6 @@ ggplot(tuningPlotData.BOW, aes(x = HL)) +
   theme_bw(base_size = 14)
 
 ```
-
 
 #### Number of Hidden Layers
 
@@ -1096,12 +1086,11 @@ for (l in 1:length(layers)){
 
 ```
 
-The other hyperparameter considered for tuning in the study's neural network modelling process is the number of hidden layers. The optimal number of hidden layers is found using the TF-IDF training and validation data. The optimal hyperparameters found previously for the TF-IDF feed forward neural networks are used in these models. The only caveat is that the number of nodes on each additional hidden layer is half of the hidden layer before it. @tbl-hidLay shows the performance of the neural network model as the number of hidden layers in the model increase. The table suggests that additional hidden layers, decrease the model's identify the class structure within the data. 
+The other hyperparameter considered for tuning in the study's neural network modelling process is the number of hidden layers. The optimal number of hidden layers is found using the TF-IDF training and validation data. The optimal hyperparameters found previously for the TF-IDF feed forward neural networks are used in these models. The only caveat is that the number of nodes on each additional hidden layer is half of the hidden layer before it. @tbl-hidLay shows the performance of the neural network model as the number of hidden layers in the model increase. The table suggests that additional hidden layers, decrease the model's identify the class structure within the data.
 
-|     Hidden Layers     |     1     |     2     |     3      |    4       |
-|:---------------------:|:---------:|:---------:|:----------:|:----------:|
-|  Misclassification %  |   42.9    |    43.9   |   44.9     |     44.7   |
-
+|    Hidden Layers    |  1   |  2   |  3   |  4   |
+|:-------------------:|:----:|:----:|:----:|:----:|
+| Misclassification % | 42.9 | 43.9 | 44.9 | 44.7 |
 
 : Validation Misclassification % as hidden layers are added {#tbl-hidLay}
 
@@ -1171,13 +1160,12 @@ plot(tf.idf.Fit.FF.NN.History)
 
 ```
 
+The optimal hyperparameters used to train and fit the two feed forward neural networks, in addition to the validation misclassification rate of the models, are shown in @tbl-optHypNN. The drastic difference between the performance of the optimal feed forward neural network on the BOW and the TF-IDF data is sizable. The BOW neural network classifies close to 55% of the sentences incorrectly. In contrast, the TF-IDF neural network only misclassifies close to 40% of the sentences in the TF-IDF validation data frame.
 
-The optimal hyperparameters used to train and fit the two feed forward neural networks, in addition to the validation misclassification rate of the models, are shown in @tbl-optHypNN. The drastic difference between the performance of the optimal feed forward neural network on the BOW and the TF-IDF data is sizable. The BOW neural network classifies close to 55% of the sentences incorrectly. In contrast, the TF-IDF neural network only misclassifies close to 40% of the sentences in the TF-IDF validation data frame. 
-
-|           | Activation |  Nodes  | Dropout % | Batch Size | Hidden Layers | Misclass % |
-|:---------:|:----------:|:-------:|:---------:|:----------:|:-------------:|:----------:|
-|   BOW     |  ReLu      |   128   |    55     |     512    |       1       |    54.4    |
-|   TF-IDF  |  ReLu      |   1024  |    10     |     16     |       1       |    42.3    |
+|        | Activation | Nodes | Dropout % | Batch Size | Hidden Layers | Misclass % |
+|:------:|:----------:|:-----:|:---------:|:----------:|:-------------:|:----------:|
+|  BOW   |    ReLu    |  128  |    55     |    512     |       1       |    54.4    |
+| TF-IDF |    ReLu    | 1024  |    10     |     16     |       1       |    42.3    |
 
 : Optimal Hyperparameters and Model Performance {#tbl-optHypNN}
 
@@ -1194,40 +1182,37 @@ tf.idf.Test.RF.ClassError
 tf.idf.Fit.FF.NN.ClassError
 ```
 
-Each of the classification model's considered in this study have their predictive capabilities tested with the respective test data sets. The misclassification rates for the BOW models are calculated on the BOW test data. Similarly, the performance of the TF-IDF models is calculated on the TF-IDF test data. @tbl-testPerf shows the test misclassification rates for all six of the classification models, ranked overall from best to worst. The TF-IDF neural network is the best classifier produced in this study. It accurately misclassifies 40% of the sentences in the test data to the president who used them in a SONA. Conversely, the BOW Classification Tree is the worst performing model. It incorrectly classifies over 71% of test sentences. 
+Each of the classification model's considered in this study have their predictive capabilities tested with the respective test data sets. The misclassification rates for the BOW models are calculated on the BOW test data. Similarly, the performance of the TF-IDF models is calculated on the TF-IDF test data. @tbl-testPerf shows the test misclassification rates for all six of the classification models, ranked overall from best to worst. The TF-IDF neural network is the best classifier produced in this study. It accurately misclassifies 40% of the sentences in the test data to the president who used them in a SONA. Conversely, the BOW Classification Tree is the worst performing model. It incorrectly classifies over 71% of test sentences.
 
-|                               |  Test Misclassification %    |
-|:-----------------------------:|:----------------------------:|
-|  Neural Network (TF-IDF)      |             40.0             |
-|  Random Forest (TF-IDF)       |             47.4             |
-|  Random Forest (BOW)          |             47.8             |
-|  Neural Network (BOW)         |             54.4             |
-|  Classificiation Tree (TF-IDF)|             70.2             |
-|  Classificiation Tree (BOW)   |             71.7             |
+|                               | Test Misclassification % |
+|:-----------------------------:|:------------------------:|
+|    Neural Network (TF-IDF)    |           40.0           |
+|    Random Forest (TF-IDF)     |           47.4           |
+|      Random Forest (BOW)      |           47.8           |
+|     Neural Network (BOW)      |           54.4           |
+| Classificiation Tree (TF-IDF) |           70.2           |
+|  Classificiation Tree (BOW)   |           71.7           |
 
 : Performance of Models on Test Data {#tbl-testPerf}
 
-The most interesting feature of the table is that the BOW random forest outperforms the BOW neural network in classifying sentences to presidents by over 6%. @tbl-panelTest shows the confusion matrices comparing the predicted president classification (columns) to the actual president classification (rows) for the test data for both models. @tbl-nnBOWTest highlights that the BOW neural network is seemingly classifying close to 50% of the test sentences as from President Mandela. This is similar to the issues experienced by both the BOW classification tree model and the BOW random forest model. Each of these BOW models exhibit a strong bias towards a president. Even though it is not as pronounced in @tbl-rfBOWTest, the BOW random forest model's bias towards classifying sentences for President Zuma is clear. These results suggest that all of the BOW models are struggling to identify the true class structure in the BOW sentence data. The consistency of the problem propose that the issue is with the construction of the BOW data frame with the count frequencies and not the models themselves. 
+The most interesting feature of the table is that the BOW random forest outperforms the BOW neural network in classifying sentences to presidents by over 6%. @tbl-panelTest shows the confusion matrices comparing the predicted president classification (columns) to the actual president classification (rows) for the test data for both models. @tbl-nnBOWTest highlights that the BOW neural network is seemingly classifying close to 50% of the test sentences as from President Mandela. This is similar to the issues experienced by both the BOW classification tree model and the BOW random forest model. Each of these BOW models exhibit a strong bias towards a president. Even though it is not as pronounced in @tbl-rfBOWTest, the BOW random forest model's bias towards classifying sentences for President Zuma is clear. These results suggest that all of the BOW models are struggling to identify the true class structure in the BOW sentence data. The consistency of the problem indicates that the issue is with the construction of the BOW data frame with the count frequencies and not the models themselves.
 
-::: {#tbl-panelTest layout-ncol=2}
-
+::: {#tbl-panelTest layout-ncol="2"}
 |           | Mandela | Mbeki | Ramaphosa | Zuma |
 |:---------:|:-------:|:-----:|:---------:|:----:|
-|  Mandela  |    52   |   29  |     8     |  46  |
-|   Mbeki   |    18   |   69  |     9     |  39  |
-| Ramaphosa |    11   |   18  |     68    |  38  |
-|    Zuma   |    6    |   13  |     23    |  93  |
-
+|  Mandela  |   52    |  29   |     8     |  46  |
+|   Mbeki   |   18    |  69   |     9     |  39  |
+| Ramaphosa |   11    |  18   |    68     |  38  |
+|   Zuma    |    6    |  13   |    23     |  93  |
 
 : Random Forest {#tbl-rfBOWTest}
 
 |           | Mandela | Mbeki | Ramaphosa | Zuma |
 |:---------:|:-------:|:-----:|:---------:|:----:|
-|  Mandela  |   103   |   19  |     6     |   7  |
-|   Mbeki   |    68   |   43  |     7     |  17  |
-| Ramaphosa |    57   |   11  |     56    |  11  |
-|    Zuma   |    59   |   14  |     18    |  44  |
-
+|  Mandela  |   103   |  19   |     6     |  7   |
+|   Mbeki   |   68    |  43   |     7     |  17  |
+| Ramaphosa |   57    |  11   |    56     |  11  |
+|   Zuma    |   59    |  14   |    18     |  44  |
 
 : Neural Network {#tbl-nnBOWTest}
 
@@ -1235,5 +1220,7 @@ BOW Test Confusion Matrices
 :::
 
 # 4. Conclusion.
+
+This study seeked to find the best performing classification algorithm for identifying the president given a sentence from one of their State of the Nation addresses. Three classification algorithms were considered for two frequency variations of the speech sentence data. The feed forward neural network was the best performing classifier for the Term Frequency--Inverse Document Frequency data and overall. The classification trees performed marginally better than a single president classification algorithm for both the Bag of Words data and the TF-IDF data. The random forest model produced a smaller misclassification rate than the feed forward neural network for the BOW data. The feed forward neural network appears to be the best classifier to use for sentence identification when used in conjunction with the TF-IDF weighted scores. None of the models perform well enough to the extent that they could be used confidently to classify a SONA sentence from a president. Further research, should explore why count frequencies perform worse than TF-IDF scores across classification algorithms. Additionally, further and more thorough hyperparameter tuning should be investigated for the feed forward neural networks in an attempt to improve their classification performance. In conclusion, there are benefits to using classification algorithms to identify the president from a SONA sentence, however, further explorative research is necessary to optimise the performance of these models.
 
 # References.
